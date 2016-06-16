@@ -1,6 +1,8 @@
 package com.ikokoon.serenity.hudson.source;
 
 import com.ikokoon.serenity.IConstants;
+import com.ikokoon.serenity.model.*;
+import com.ikokoon.serenity.model.Package;
 import com.ikokoon.serenity.model.Class;
 import de.java2html.converter.JavaSource2HTMLConverter;
 import de.java2html.javasource.JavaSource;
@@ -28,7 +30,7 @@ public class CoverageSourceCode implements ISourceCode {
     /**
      * The class from the model that has the source code in it.
      */
-    private Class<?, ?> klass;
+    private Class<com.ikokoon.serenity.model.Package, Method> klass;
     private String source;
     private JavaSourceParser javaSourceParser;
 
@@ -58,7 +60,7 @@ public class CoverageSourceCode implements ISourceCode {
      * @param source the
      *               source of the Java class
      */
-    public CoverageSourceCode(Class<?, ?> klass, String source) {
+    public CoverageSourceCode(Class<Package, Method> klass, String source) {
         this.klass = klass;
         this.source = source;
         try {

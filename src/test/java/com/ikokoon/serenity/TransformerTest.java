@@ -23,6 +23,7 @@ import static org.junit.Assert.*;
  */
 public class TransformerTest extends ATest {
 
+    private Configuration configuration;
     private Instrumentation instrumentation = null;
     private ProtectionDomain protectionDomain = null;
 
@@ -31,9 +32,7 @@ public class TransformerTest extends ATest {
         // Call the pre-main to load stuff we need
         Transformer.premain(null, instrumentation);
         Transformer.removeShutdownHook();
-
-        /*DataBaseToolkit.clear(dataBase);
-        Collector.initialize(dataBase);*/
+        configuration = Configuration.getConfiguration();
     }
 
     @After
@@ -64,14 +63,14 @@ public class TransformerTest extends ATest {
 
     @Test
     public void excluded() {
-        assertTrue(Configuration.getConfiguration().excluded(Object.class.getName()));
-        assertFalse(Configuration.getConfiguration().excluded(InputStream.class.getName()));
+        assertTrue(configuration.excluded(Object.class.getName()));
+        assertFalse(configuration.excluded(Target.class.getName()));
     }
 
     @Test
     public void included() {
-        assertTrue(Configuration.getConfiguration().included(Target.class.getName()));
-        assertFalse(Configuration.getConfiguration().included(Object.class.getName()));
+        assertTrue(configuration.included(Target.class.getName()));
+        assertFalse(configuration.included(Object.class.getName()));
     }
 
 }

@@ -7,6 +7,9 @@ import hudson.model.Run;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.neodatis.odb.core.layers.layer3.IOSocketParameter;
+import org.neodatis.odb.impl.core.server.layers.layer3.engine.ClientStorageEngine;
+import org.neodatis.odb.impl.main.RemoteODBClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,25 +20,25 @@ import java.io.IOException;
  *
  * @author Michael Couck
  * @version 01.00
- * @since 09.12.09
+ * @since 09-12-2009
  */
 @SuppressWarnings("rawtypes")
 public class SerenityProjectAction extends Actionable implements ProminentProjectAction {
 
     private Logger logger = LoggerFactory.getLogger(SerenityProjectAction.class);
     /**
-     * The real owner that generated the build.
+     * The real abstractProject that generated the build.
      */
-    private AbstractProject owner;
+    private AbstractProject abstractProject;
 
     /**
      * Constructor takes the real build from Hudson.
      *
-     * @param owner the build that generated the actual build
+     * @param abstractProject the build that generated the actual build
      */
-    public SerenityProjectAction(AbstractProject owner) {
+    public SerenityProjectAction(final AbstractProject abstractProject) {
         logger.debug("SerenityProjectAction:");
-        this.owner = owner;
+        this.abstractProject = abstractProject;
     }
 
     /**
@@ -73,9 +76,9 @@ public class SerenityProjectAction extends Actionable implements ProminentProjec
     @JavaScriptMethod
     public ISerenityResult getLastResult() {
         logger.debug("getLastResult");
-        Run build = owner.getLastStableBuild();
+        Run build = abstractProject.getLastStableBuild();
         if (build == null) {
-            build = owner.getLastBuild();
+            build = abstractProject.getLastBuild();
         }
         if (build != null) {
             SerenityBuildAction action = build.getAction(SerenityBuildAction.class);
@@ -87,16 +90,32 @@ public class SerenityProjectAction extends Actionable implements ProminentProjec
     }
 
     @JavaScriptMethod
+    @SuppressWarnings("unused")
     public String getLastBuildProjectId() {
         return getLastResult().getLastBuildProjectId();
     }
 
     @JavaScriptMethod
+    @SuppressWarnings("unused")
     public String getProjectName() {
         return getLastResult().getName();
     }
 
-    public void doIndex(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    @JavaScriptMethod
+    @SuppressWarnings("unused")
+    public String getProfilingData() {
+        try {
+            RemoteODBClient odbClient;
+            IOSocketParameter ioSocketParameter;
+            ClientStorageEngine clientStorageEngine;
+        } catch (final Exception e) {
+            e.printStackTrace();
+        }
+        return getLastResult().getName();
+    }
+
+    @SuppressWarnings("unused")
+    public void doIndex(final StaplerRequest req, final StaplerResponse rsp) throws IOException {
         logger.debug("doIndex");
         if (hasResult()) {
             rsp.sendRedirect2("../lastBuild/serenity");

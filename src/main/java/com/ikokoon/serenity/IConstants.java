@@ -160,6 +160,7 @@ public interface IConstants {
     String LISTENING = "listening";
 
     int PORT = 50005;
+    int DATABASE_PORT = 8008;
 
     String STYLE_SHEET = "profiler-report-style.css";
     String METHOD_SERIES = "greatestAverageTimePerMethod.html";

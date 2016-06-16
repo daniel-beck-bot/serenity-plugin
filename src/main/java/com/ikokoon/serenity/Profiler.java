@@ -132,8 +132,8 @@ public class Profiler {
      * @param method the method series of timeings
      * @return a list of the times for the method
      */
-    public static List<Double> methodSeries(Method<?, ?> method) {
-        List<Double> series = new ArrayList<Double>();
+    public static List<Double> methodSeries(final Method<?, ?> method) {
+        List<Double> series = new ArrayList<>();
         List<Snapshot<?, ?>> snapshots = method.getSnapshots();
         for (Snapshot<?, ?> snapshot : snapshots) {
             series.add(getValue(snapshot.getTotal()));
@@ -149,8 +149,8 @@ public class Profiler {
      * @param method the method to get the net time for
      * @return the list of timings for the method
      */
-    public static List<Double> methodNetSeries(Method<?, ?> method) {
-        List<Double> series = new ArrayList<Double>();
+    public static List<Double> methodNetSeries(final Method<?, ?> method) {
+        List<Double> series = new ArrayList<>();
         List<Snapshot<?, ?>> snapshots = method.getSnapshots();
         for (Snapshot<?, ?> snapshot : snapshots) {
             double netTime = snapshot.getTotal() - snapshot.getWait();
@@ -168,7 +168,7 @@ public class Profiler {
      * @param method the method to get the total time for
      * @return the total time for the method
      */
-    public static double totalMethodTime(Method<?, ?> method) {
+    public static double totalMethodTime(final Method<?, ?> method) {
         List<Double> methodSeries = methodSeries(method);
         long totalTime = 0;
         for (Double time : methodSeries) {
@@ -185,7 +185,7 @@ public class Profiler {
      * @param method the method to get the total net time for
      * @return the total net for the method
      */
-    public static double totalNetMethodTime(Method<?, ?> method) {
+    public static double totalNetMethodTime(final Method<?, ?> method) {
         List<Double> methodNetSeries = methodNetSeries(method);
         long totalNetTime = 0;
         for (Double netTime : methodNetSeries) {
@@ -202,8 +202,8 @@ public class Profiler {
      * @param method the method to get change in time for
      * @return the list of changes in timings for the method
      */
-    public static List<Double> methodChangeSeries(Method<?, ?> method) {
-        List<Double> series = new ArrayList<Double>();
+    public static List<Double> methodChangeSeries(final Method<?, ?> method) {
+        List<Double> series = new ArrayList<>();
         List<Double> methodSeries = methodSeries(method);
         double previousTime = 0;
         for (Double time : methodSeries) {
@@ -222,8 +222,8 @@ public class Profiler {
      * @param method bla...
      * @return bla...
      */
-    public static List<Double> methodNetChangeSeries(Method<?, ?> method) {
-        List<Double> series = new ArrayList<Double>();
+    public static List<Double> methodNetChangeSeries(final Method<?, ?> method) {
+        List<Double> series = new ArrayList<>();
         List<Double> methodNetSeries = methodNetSeries(method);
         double previousTime = 0;
         for (Double time : methodNetSeries) {
@@ -242,7 +242,7 @@ public class Profiler {
      * @param method bla...
      * @return bla...
      */
-    public static double averageMethodTime(Method<?, ?> method) {
+    public static double averageMethodTime(final Method<?, ?> method) {
         List<Double> methodSeries = methodSeries(method);
         double totalTime = 0;
         for (Double time : methodSeries) {
@@ -260,7 +260,7 @@ public class Profiler {
      * @param method bla...
      * @return bla...
      */
-    public static double averageMethodNetTime(Method<?, ?> method) {
+    public static double averageMethodNetTime(final Method<?, ?> method) {
         List<Double> methodNetSeries = methodNetSeries(method);
         double totalTime = 0;
         for (Double time : methodNetSeries) {
@@ -278,7 +278,7 @@ public class Profiler {
      * @param method bla...
      * @return bla...
      */
-    public static double methodChange(Method<?, ?> method) {
+    public static double methodChange(final Method<?, ?> method) {
         List<Double> methodSeries = methodSeries(method);
         double totalChange = 0;
         double previousTime = 0;
@@ -298,7 +298,7 @@ public class Profiler {
      * @param method bla...
      * @return bla...
      */
-    public static double methodNetChange(Method<?, ?> method) {
+    public static double methodNetChange(final Method<?, ?> method) {
         List<Double> methodNetSeries = methodNetSeries(method);
         double totalChange = 0;
         double previousTime = 0;

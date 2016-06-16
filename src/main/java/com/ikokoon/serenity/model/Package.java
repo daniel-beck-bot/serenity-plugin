@@ -10,7 +10,7 @@ import java.util.TreeSet;
  * @version 01.00
  */
 @Unique(fields = { Composite.NAME })
-public class Package<E, F> extends Composite<Project<?, ?>, Class<?, ?>> implements Comparable<Package<?, ?>>, Serializable {
+public class Package<E, F> extends Composite<Project, Class> implements Comparable<Package<?, ?>>, Serializable {
 
 	private String name;
 
@@ -28,8 +28,8 @@ public class Package<E, F> extends Composite<Project<?, ?>, Class<?, ?>> impleme
 	private double efference;
 	private double afference;
 
-	private Set<Efferent> efferent = new TreeSet<Efferent>();
-	private Set<Afferent> afferent = new TreeSet<Afferent>();
+	private Set<Efferent> efferent = new TreeSet<>();
+	private Set<Afferent> afferent = new TreeSet<>();
 
 	public String getName() {
 		return name;

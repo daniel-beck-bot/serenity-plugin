@@ -1,5 +1,6 @@
 package com.ikokoon.serenity.process;
 
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -34,11 +35,11 @@ public class CleanerTest extends ATest implements IConstants {
 
 	@Before
 	public void addPackages() {
-		Configuration.getConfiguration().includedPackages.clear();
-		Configuration.getConfiguration().includedPackages.add("com.ikokoon");
-		Configuration.getConfiguration().includedPackages.add("edu.umd.cs.findbugs");
-		Configuration.getConfiguration().excludedPackages.add(className);
-		Configuration.getConfiguration().excludedPackages.add(packageName);
+		Configuration.getConfiguration().getIncludedPackages().clear();
+		Configuration.getConfiguration().getIncludedPackages().add("com.ikokoon");
+		Configuration.getConfiguration().getIncludedPackages().add("edu.umd.cs.findbugs");
+		Configuration.getConfiguration().getExcludedPackages().add(className);
+		Configuration.getConfiguration().getExcludedPackages().add(packageName);
 
 		File sourceOdbDataBaseFile = new File("./src/test/resources/isearch/merge/tag.odb");
 		File targetOdbDataBaseFile = new File(databaseFile);
@@ -47,7 +48,7 @@ public class CleanerTest extends ATest implements IConstants {
 			targetOdbDataBaseFile.getParentFile().mkdirs();
 		}
 		Toolkit.copyFile(sourceOdbDataBaseFile, targetOdbDataBaseFile);
-		dataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, targetOdbDataBaseFile.getAbsolutePath(), null);
+		dataBase = getDataBase(DataBaseOdb.class, targetOdbDataBaseFile.getAbsolutePath(), Boolean.FALSE, null);
 	}
 
 	@After

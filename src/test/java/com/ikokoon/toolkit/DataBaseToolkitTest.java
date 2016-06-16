@@ -22,7 +22,9 @@ public class DataBaseToolkitTest extends ATest {
     @Ignore
     public void dump() {
         IDataBase dataBase = getDataBase(DataBaseOdb.class,
-                "/home/laptop/Workspace/serenity/work/jobs/i-discover/builds/31/serenity/serenity.odb", null);
+                "/home/laptop/Workspace/serenity/work/jobs/i-discover/builds/31/serenity/serenity.odb",
+                Boolean.FALSE,
+                null);
         DataBaseToolkit.dump(dataBase, new DataBaseToolkit.ICriteria() {
             @SuppressWarnings("rawtypes")
             public boolean satisfied(final Composite<?, ?> composite) {

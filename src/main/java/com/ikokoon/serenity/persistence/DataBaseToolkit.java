@@ -159,10 +159,10 @@ public final class DataBaseToolkit {
         }
         try {
             List<Package> packages = dataBase.find(Package.class);
-            for (final Package<?, ?> pakkage : packages) {
+            for (final Package<Project, Class> pakkage : packages) {
                 log(criteria, pakkage, 1, pakkage.getId(), " : ", pakkage.getName(), ", coverage : ", pakkage.getCoverage(), ", complexity : ",
                         pakkage.getComplexity(), ", stability : ", pakkage.getStability());
-                for (final Class<?, ?> klass : (pakkage.getChildren())) {
+                for (final Class<Package, Method> klass : pakkage.getChildren()) {
                     log(criteria, klass, 2, " : id : ", klass.getId(), " : name : ", klass.getName(), " : coverage : ", klass.getCoverage(), ", complexity : ",
                             klass.getComplexity(), ", outer class : ", klass.getOuterClass(), ", outer method : ", klass.getOuterMethod(), ", lines : ", klass
                                     .getChildren().size(), ", inner classes : ", klass.getInnerClasses());
@@ -177,7 +177,7 @@ public final class DataBaseToolkit {
                     for (final Afferent afferent : afferents) {
                         log(criteria, afferent, 4, afferent.getName());
                     }
-                    for (final Method<?, ?> method : klass.getChildren()) {
+                    for (final Method<Class, Line> method : klass.getChildren()) {
                         log(criteria, method, 3, method.getId().toString(), " : name : ", method.getName(), " : description : ", method.getDescription(),
                                 " : coverage : ", method.getCoverage(), ", complexity : ", method.getComplexity(), ", start time : ", method.getStartTime()
                                         + ", end time : ", method.getEndTime());

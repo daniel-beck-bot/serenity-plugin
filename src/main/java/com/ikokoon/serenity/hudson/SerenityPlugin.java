@@ -19,14 +19,13 @@ import java.util.Set;
 
 /**
  * Entry point of a plugin.
- * <p>
- * <p>
- * There must be one class in each plugin. Actually not any more. If there is no plugin in the plugin then Hudson will create one it seems.. See
- * JavaDoc of for more about what can be done on this class.
+ * <p/>
+ * There must be one class in each plugin. Actually not any more. If there is no plugin in the plugin then Hudson will
+ * create one it seems.. See JavaDoc of for more about what can be done on this class.
  *
  * @author Michael Couck
  * @version 01.00
- * @since 25.07.09
+ * @since 25-07-2009
  */
 @Extension
 @ExportedBean
@@ -46,8 +45,8 @@ public class SerenityPlugin extends Plugin {
     }
 
     /**
-     * We need to stop all the databases. This releases memory and allows the databases to be committed in the case any objects were modified, which
-     * generally they shouldn't be of course.
+     * We need to stop all the databases. This releases memory and allows the databases to be committed in
+     * the case any objects were modified, which generally they shouldn't be of course.
      */
     @Override
     public void stop() {

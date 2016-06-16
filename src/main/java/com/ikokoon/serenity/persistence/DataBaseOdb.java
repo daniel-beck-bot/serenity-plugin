@@ -1,9 +1,11 @@
 package com.ikokoon.serenity.persistence;
 
+import com.ikokoon.serenity.IConstants;
 import com.ikokoon.serenity.model.Composite;
 import com.ikokoon.toolkit.Toolkit;
 import org.neodatis.odb.ODB;
 import org.neodatis.odb.ODBFactory;
+import org.neodatis.odb.ODBServer;
 import org.neodatis.odb.Objects;
 import org.neodatis.odb.core.query.IQuery;
 import org.neodatis.odb.core.query.criteria.Where;
@@ -12,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.ServerSocket;
 import java.util.*;
 
 /**
@@ -25,6 +28,10 @@ public class DataBaseOdb extends DataBase {
 
     private Logger logger = LoggerFactory.getLogger(this.getClass());
     /**
+     * The server for the database for remote access to the running data.
+     */
+    private ODBServer odbServer;
+    /**
      * The Neodatis object database for persistence.
      */
     private ODB odb = null;
@@ -35,24 +42,49 @@ public class DataBaseOdb extends DataBase {
     /**
      * The closed flag.
      */
-    private boolean closed = true;
+    private boolean closed = Boolean.TRUE;
 
     /**
      * Constructor initialises a {@link DataBaseOdb} object.
      *
      * @param dataBaseFile the file to open the database with
      */
-    public DataBaseOdb(final String dataBaseFile) {
+    public DataBaseOdb(final String dataBaseFile, final boolean server) {
         synchronized (DataBaseOdb.class) {
             this.dataBaseFile = dataBaseFile;
             logger.debug("Opening ODB database on file : " + new File(dataBaseFile).getAbsolutePath());
             try {
-                odb = ODBFactory.open(this.dataBaseFile);
+                if (!server) {
+                    odb = ODBFactory.open(this.dataBaseFile);
+                } else {
+                    odbServer = ODBFactory.openServer(findOpenPort(IConstants.DATABASE_PORT));
+                    odbServer.addBase(IConstants.DATABASE_FILE_ODB, this.dataBaseFile);
+                    odbServer.setAutomaticallyCreateDatabase(Boolean.TRUE);
+                    odbServer.startServer(Boolean.TRUE);
+
+                    odb = odbServer.openClient(IConstants.DATABASE_FILE_ODB);
+                }
                 closed = false;
             } catch (final Exception e) {
                 logger.error("Exception initialising the database : " + dataBaseFile + ", " + this, e);
             }
         }
+    }
+
+    private int findOpenPort(final int startingAtPort) {
+        int openPort = startingAtPort;
+        while (openPort < ((Short.MAX_VALUE * 2) - 1)) {
+            try {
+                new ServerSocket(openPort).close();
+                return openPort;
+            } catch (final Exception e) {
+                logger.info("Port occupied, multiple instances of Serenity perhaps : ", e);
+            } finally {
+                openPort++;
+            }
+        }
+        // Default is to get the system to choose a port
+        return 0;
     }
 
     /**
@@ -203,14 +235,19 @@ public class DataBaseOdb extends DataBase {
             commit();
             odb.close();
 
+            if (odbServer != null) {
+                odbServer.close();
+            }
+
             IDataBaseEvent dataBaseEvent = new DataBaseEvent(this, IDataBaseEvent.Type.DATABASE_CLOSE);
             IDataBase.DataBaseManager.fireDataBaseEvent(dataBaseFile, dataBaseEvent);
 
             logger.debug("Closed database on file : " + new File(dataBaseFile).getAbsolutePath());
         } catch (final Exception e) {
             logger.error("Exception closing the ODB database : " + this, e);
+        } finally {
+            closed = true;
         }
-        closed = true;
     }
 
     @SuppressWarnings("unchecked")

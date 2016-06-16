@@ -14,6 +14,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.List;
 
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -36,7 +37,7 @@ public class PrunerTest extends ATest implements IConstants {
 
         Toolkit.copyFile(sourceOdbDataBaseFile, targetOdbDataBaseFile);
 
-        final IDataBase odbDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, targetOdbDataBaseFile.getAbsolutePath(), null);
+        final IDataBase odbDataBase = getDataBase(DataBaseOdb.class, targetOdbDataBaseFile.getAbsolutePath(), Boolean.FALSE, null);
 
         // Assert that there are no more afferent and lines in the database
         List<Line> lines = odbDataBase.find(Line.class);

@@ -149,15 +149,15 @@ public class SerenityResult implements ISerenityResult {
                 });
                 // Sort the classes in the packages
                 for (Package<?, ?> pakkage : packages) {
-                    Collections.sort(pakkage.getChildren(), new Comparator<Class<?, ?>>() {
-                        public int compare(Class<?, ?> o1, Class<?, ?> o2) {
+                    Collections.sort(pakkage.getChildren(), new Comparator<Class>() {
+                        public int compare(Class o1, Class o2) {
                             return o1.getName().compareTo(o2.getName());
                         }
                     });
                     // Sort the methods in the classes
                     for (Class<?, ?> klass : pakkage.getChildren()) {
-                        Collections.sort(klass.getChildren(), new Comparator<Method<?, ?>>() {
-                            public int compare(Method<?, ?> o1, Method<?, ?> o2) {
+                        Collections.sort(klass.getChildren(), new Comparator<Method>() {
+                            public int compare(Method o1, Method o2) {
                                 return o1.getName().compareTo(o2.getName());
                             }
                         });
@@ -217,6 +217,7 @@ public class SerenityResult implements ISerenityResult {
     }
 
     @JavaScriptMethod
+    @SuppressWarnings("unused")
     public String getProjectModel() {
         Project<?, ?> project = getProject();
         return getModel(project);
@@ -300,7 +301,7 @@ public class SerenityResult implements ISerenityResult {
 
     private IDataBase getDataBase(final AbstractBuild<?, ?> abstractBuild) {
         String dataBaseFile = abstractBuild.getRootDir().getAbsolutePath() + File.separator + IConstants.DATABASE_FILE_ODB;
-        return IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, dataBaseFile, null);
+        return IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, dataBaseFile, Boolean.FALSE, null);
     }
 
     private void closeDataBase(final IDataBase dataBase) {

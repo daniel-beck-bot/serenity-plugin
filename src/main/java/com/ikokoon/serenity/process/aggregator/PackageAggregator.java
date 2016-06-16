@@ -4,11 +4,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.ikokoon.serenity.model.Afferent;
+import com.ikokoon.serenity.model.*;
 import com.ikokoon.serenity.model.Class;
-import com.ikokoon.serenity.model.Efferent;
-import com.ikokoon.serenity.model.Line;
-import com.ikokoon.serenity.model.Method;
 import com.ikokoon.serenity.model.Package;
 import com.ikokoon.serenity.persistence.IDataBase;
 
@@ -19,9 +16,9 @@ import com.ikokoon.serenity.persistence.IDataBase;
  */
 public class PackageAggregator extends AAggregator {
 
-	private Package<?, ?> pakkage;
+	private Package<Project, Class> pakkage;
 
-	public PackageAggregator(IDataBase dataBase, Package<?, ?> pakkage) {
+	public PackageAggregator(IDataBase dataBase, Package<Project, Class> pakkage) {
 		super(dataBase);
 		this.pakkage = pakkage;
 	}
@@ -29,7 +26,7 @@ public class PackageAggregator extends AAggregator {
 	@SuppressWarnings("rawtypes")
 	public void aggregate() {
 		// First do the classes
-		List<Class<?, ?>> classes = pakkage.getChildren();
+		List<Class> classes = pakkage.getChildren();
 		for (Class klass : classes) {
 			new ClassAggregator(dataBase, klass).aggregate();
 		}

@@ -9,8 +9,9 @@ import java.util.List;
  * @version 01.00
  * @since 12.08.09
  */
+@SuppressWarnings("unused")
 @Unique(fields = {Composite.CLASS_NAME, Composite.NAME, Composite.DESCRIPTION})
-public class Method<E, F> extends Composite<Class<?, ?>, Line<?, ?>> implements Comparable<Method<?, ?>>, Serializable {
+public class Method<E, F> extends Composite<E, F> implements Comparable<Method<?, ?>>, Serializable {
 
     /**
      * General.
@@ -38,7 +39,7 @@ public class Method<E, F> extends Composite<Class<?, ?>, Line<?, ?>> implements 
     private long endWait;
     private long waitTime;
 
-    private List<Snapshot<?, ?>> snapshots = new ArrayList<Snapshot<?, ?>>();
+    private List<Snapshot<?, ?>> snapshots = new ArrayList<>();
 
     public String getName() {
         return name;
@@ -229,7 +230,8 @@ public class Method<E, F> extends Composite<Class<?, ?>, Line<?, ?>> implements 
         setTotalTime(0);
     }
 
-    public int compareTo(Method<?, ?> o) {
+    @SuppressWarnings("NullableProblems")
+    public int compareTo(final Method<?, ?> o) {
         int comparison = 0;
         if (this.getId() != null && o.getId() != null) {
             comparison = this.getId().compareTo(o.getId());

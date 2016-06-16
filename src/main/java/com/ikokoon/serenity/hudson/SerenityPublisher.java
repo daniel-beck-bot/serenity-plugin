@@ -35,12 +35,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
+
 /**
  * This class runs at the end of the build, called by Hudson. The purpose is to copy the database files from the output
  * directories for each module in the case of Maven and Ant builds to the output directory for the build for display in the
  * Hudson front end plugin. As well as this the source that was found for the project is copied to the source directory where
  * the front end can access it.
- * <p>
+ * <p/>
  * Once all the database files are copied to a location on the local machine then they are merged together and pruned.
  *
  * @author Michael Couck
@@ -79,8 +81,8 @@ public class SerenityPublisher extends Recorder implements Serializable {
      * {@inheritDoc}
      */
     @Override
-    public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener buildListener) throws InterruptedException,
-            IOException {
+    public boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener buildListener)
+            throws InterruptedException, IOException {
         PrintStream printStream = buildListener.getLogger();
         try {
             printStream.println("Publishing Serenity reports...");
@@ -123,7 +125,8 @@ public class SerenityPublisher extends Recorder implements Serializable {
      * @throws IOException
      */
     @SuppressWarnings("rawtypes")
-    private IDataBase copyDataBasesToBuildDirectory(final AbstractBuild<?, ?> build, final BuildListener buildListener) throws InterruptedException,
+    private IDataBase copyDataBasesToBuildDirectory(final AbstractBuild<?, ?> build, final BuildListener buildListener)
+            throws InterruptedException,
             IOException {
         final PrintStream printStream = buildListener.getLogger();
         IDataBase targetDataBase = null;
@@ -136,8 +139,8 @@ public class SerenityPublisher extends Recorder implements Serializable {
 
             // Create the final output database file for the build
             String targetPath = targetDataBaseFile.getAbsolutePath();
-            IDataBase odbDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, targetPath, null);
-            targetDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseRam.class, IConstants.DATABASE_FILE_RAM + "." + Math.random(), odbDataBase);
+            IDataBase odbDataBase = getDataBase(DataBaseOdb.class, targetPath, Boolean.FALSE, null);
+            targetDataBase = getDataBase(DataBaseRam.class, IConstants.DATABASE_FILE_RAM + "." + Math.random(), Boolean.FALSE, odbDataBase);
 
             // Scan the build output roots for database files to merge
             FilePath[] moduleRoots = build.getModuleRoots();
@@ -168,7 +171,7 @@ public class SerenityPublisher extends Recorder implements Serializable {
                     FilePath sourceFilePath = new FilePath(sourceFile);
                     databaseFile.copyTo(sourceFilePath);
                     sourcePath = sourceFile.getAbsolutePath();
-                    sourceDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, sourcePath, null);
+                    sourceDataBase = getDataBase(DataBaseOdb.class, sourcePath, Boolean.FALSE, null);
                     // Copy the data from the source into the target, then close the source
                     printStream.println("Copying database from... " + sourcePath + " to... " + targetPath);
                     DataBaseToolkit.copyDataBase(sourceDataBase, targetDataBase);
@@ -253,7 +256,7 @@ public class SerenityPublisher extends Recorder implements Serializable {
 
             // Create the final output database file for the build
             String targetPath = targetDataBaseFile.getAbsolutePath();
-            IDataBase odbDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, targetPath, null);
+            IDataBase odbDataBase = getDataBase(DataBaseOdb.class, targetPath, Boolean.FALSE, null);
             List<Class> classes = odbDataBase.find(Class.class);
             for (final Class clazz : classes) {
                 String source = clazz.getSource();

@@ -30,6 +30,7 @@
     </licenses>
 
     <properties>
+        <scala-version>2.10.3</scala-version>
         <main-class>com.ikokoon.serenity.Messenger</main-class>
         <pre-main-class>com.ikokoon.serenity.Transformer</pre-main-class>
         <project.build.sourceEncoding>UTF8</project.build.sourceEncoding>
@@ -62,7 +63,9 @@
                                 <property name="manifest" value="src/main/resources/META-INF/MANIFEST.MF" />
 
                                 <echo message="Unpacking and repacking serenity.jar with the agent manifest" />
+                                <!--suppress MavenModelInspection -->
                                 <unjar src="${serenity.jar}" dest="${temp}" overwrite="true" />
+                                <!--suppress MavenModelInspection -->
                                 <jar destfile="${serenity.jar}" basedir="${temp}" manifest="${manifest}" />
                             </tasks>
                         </configuration>
@@ -102,7 +105,7 @@
                         </goals>
                         <configuration combine.self="override">
                             <failOnError>false</failOnError>
-                            <additionalparam>-Xdoclint:none</additionalparam>
+                            <!--<additionalparam>-Xdoclint:none</additionalparam>-->
                         </configuration>
                     </execution>
                 </executions>
@@ -156,12 +159,6 @@
             <version>5.0.3</version>
             <scope>compile</scope>
         </dependency>
-        <!--<dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-            <scope>compile</scope>
-        </dependency>-->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
@@ -197,21 +194,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <!--<repository>
-            <id>repo1.maven.org</id>
-            <name>repo1 Mirror of http://repo1.maven.org/maven2</name>
-            <url>http://repo1.maven.org/maven2</url>
-        </repository>
-        <repository>
-            <id>repo2.maven.org</id>
-            <name>repo2 Mirror of http://repo2.maven.org/maven2</name>
-            <url>http://repo2.maven.org/maven2</url>
-        </repository>
-        <repository>
-            <id>ibiblio.org</id>
-            <name>ibiblio Mirror of http://repo1.maven.org/maven2/</name>
-            <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
-        </repository>-->
     </repositories>
 
     <pluginRepositories>

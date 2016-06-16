@@ -58,8 +58,8 @@ public abstract class AAggregator implements IAggregator {
      */
     @SuppressWarnings("unchecked")
     protected List<Line<?, ?>> getLines(Package<?, ?> pakkage) {
-        List<Line<?, ?>> packageLines = new ArrayList<Line<?, ?>>();
-        for (Class<?, ?> klass : pakkage.getChildren()) {
+        List<Line<?, ?>> packageLines = new ArrayList<>();
+        for (Class<Package, Method> klass : pakkage.getChildren()) {
             List<Line<?, ?>> lines = (List<Line<?, ?>>) this.lines.get(klass);
             if (lines == null) {
                 lines = getLines(klass, new ArrayList<Line<?, ?>>());
@@ -77,13 +77,13 @@ public abstract class AAggregator implements IAggregator {
      * @return bla...
      */
     @SuppressWarnings("unchecked")
-    protected List<Line<?, ?>> getLines(Class<?, ?> klass, List<Line<?, ?>> lines) {
-        for (Class<?, ?> innerKlass : klass.getInnerClasses()) {
+    protected List<Line<?, ?>> getLines(Class<Package, Method> klass, List<Line<?, ?>> lines) {
+        for (Class<Package, Method> innerKlass : klass.getInnerClasses()) {
             getLines(innerKlass, lines);
         }
         List<Line<?, ?>> setLines = (List<Line<?, ?>>) this.lines.get(klass);
         if (setLines == null) {
-            for (Method<?, ?> method : klass.getChildren()) {
+            for (Method<Class, Line> method : klass.getChildren()) {
                 for (Line<?, ?> line : method.getChildren()) {
                     if (!containsLine(lines, line)) {
                         lines.add(line);

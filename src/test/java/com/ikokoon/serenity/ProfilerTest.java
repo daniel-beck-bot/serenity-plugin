@@ -3,13 +3,14 @@ package com.ikokoon.serenity;
 import com.ikokoon.serenity.model.Class;
 import com.ikokoon.serenity.model.Method;
 import com.ikokoon.serenity.persistence.DataBaseOdb;
-import com.ikokoon.serenity.persistence.DataBaseToolkit;
 import com.ikokoon.serenity.persistence.IDataBase;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.List;
+
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
 
 /**
  * This test needs to have assertions. TODO implement the real tests.
@@ -27,7 +28,7 @@ public class ProfilerTest extends ATest implements IConstants {
     public static void beforeClass() {
         ATest.beforeClass();
         String dataBaseFile = "./src/test/resources/isearch/serenity.odb";
-        dataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, dataBaseFile, mockInternalDataBase);
+        dataBase = getDataBase(DataBaseOdb.class, dataBaseFile, Boolean.FALSE, mockInternalDataBase);
     }
 
     @Test

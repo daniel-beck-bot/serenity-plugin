@@ -7,31 +7,53 @@ import com.ikokoon.serenity.model.Class;
 import com.ikokoon.serenity.model.Package;
 import com.ikokoon.serenity.persistence.IDataBase;
 import com.ikokoon.toolkit.Toolkit;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
- * Note to self: Make this class non static? Is this a better option? More OO? Better performance? Will it be easier to understand? In the case of distributing
- * the collector class by putting it in the constant pool of the classes and then calling the instance variable from inside the classes, will this be more
- * difficult to understand?
- * <p>
- * In this static class all the real collection logic is in one place and is called statically. The generation of the instructions to call this class is simple
- * and seemingly not much less performant than an instance variable.
- * <p>
- * This class collects the data from the processing. It adds the metrics to the packages, classes, methods and lines and persists the data in the database. This
- * is the central collection class for the coverage and dependency functionality.
+ * Note to self: Make this class non static? Is this a better option? More OO? Better performance? Will it be easier to
+ * understand? In the case of distributing the collector class by putting it in the constant pool of the classes and then
+ * calling the instance variable from inside the classes, will this be more difficult to understand?
+ * <p/>
+ * In this static class all the real collection logic is in one place and is called statically. The generation of the
+ * instructions to call this class is simple and seemingly not much less performant than an instance variable.
+ * <p/>
+ * This class collects the data from the processing. It adds the metrics to the packages, classes, methods and lines and
+ * persists the data in the database. This is the central collection class for the coverage and dependency functionality.
  *
  * @author Michael Couck
  * @version 01.00
  * @since 12.07.09
  */
 public final class Collector implements IConstants {
+
+    static final BeanUtilsBean BEAN_UTILS_BEAN = BeanUtilsBean.getInstance();
+
+    static class CallMethod extends Method<Method, Method> {
+
+        CallMethod(final int depth, final int lineNumber, final Method<?, ?> method) {
+            this.depth = depth;
+            this.lineNumber = lineNumber;
+            setProperties(method);
+        }
+
+        final void setProperties(final Method method) {
+            try {
+                BEAN_UTILS_BEAN.copyProperties(this, method);
+            } catch (final IllegalAccessException | InvocationTargetException e) {
+                LOGGER.error("Exception copying properties from method to call method entity : ", e);
+            }
+        }
+
+        int depth;
+        int lineNumber;
+    }
 
     /**
      * The LOGGER.
@@ -41,6 +63,11 @@ public final class Collector implements IConstants {
      * The database/persistence object.
      */
     private static IDataBase DATABASE;
+
+    /**
+     * Bla...
+     */
+    static final Map<Long, Stack<CallMethod>> CALL_STACKS = new HashMap<>();
 
     /** These are the profiler methods. */
 
@@ -54,13 +81,14 @@ public final class Collector implements IConstants {
     }
 
     /**
-     * This class is called by the byte code injection to increment the allocations of classes on the heap, i.e. when their constructors are called.
+     * This class is called by the byte code injection to increment the allocations of classes on the heap, i.e. when their
+     * constructors are called.
      *
      * @param className the name of the class being instantiated
      */
     @SuppressWarnings("unused")
     public static void collectAllocation(final String className, final String methodName, final String methodDescription) {
-        Class<Package<?, ?>, Method<?, ?>> klass = getClass(className);
+        Class<Package, Method> klass = getClass(className);
         double allocations = klass.getAllocations();
         allocations++;
         klass.setAllocations(allocations);
@@ -75,14 +103,54 @@ public final class Collector implements IConstants {
      */
     @SuppressWarnings("unused")
     public static void collectStart(final String className, final String methodName, final String methodDescription) {
-        Method<?, ?> method = getMethod(className, methodName, methodDescription);
-        method.setInvocations(method.getInvocations() + 1);
-        method.setStartTime(System.nanoTime());
+        long threadId = Thread.currentThread().getId();
+        Stack<CallMethod> callStack = CALL_STACKS.get(threadId);
+        // New thread? With no stack associated with it yet
+        if (callStack == null) {
+            callStack = new Stack<>();
+            CALL_STACKS.put(threadId, callStack);
+        }
+        // Check that the stack has all the methods on it from the stack trace array, and
+        // returns the depth of the stack according to the JVM/thread that we are collecting for
+        int depth = collectStack(callStack);
+        // The last method on the stack is the one we are collecting for now
+        CallMethod callMethod = callStack.get(depth);
+        callMethod.setStartTime(System.nanoTime());
+        callMethod.setInvocations(callMethod.getInvocations() + 1);
+    }
+
+    static int collectStack(final Stack<CallMethod> callStack) {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        for (int i = 0; i < stackTraceElements.length; i++) {
+            StackTraceElement stackTraceElement = stackTraceElements[i];
+            String className = stackTraceElement.getClassName();
+            String methodName = stackTraceElement.getMethodName();
+            int lineNumber = stackTraceElement.getLineNumber();
+            // If we don't have the method on the stack the push it to the stack
+            if (callStack.size() <= i) {
+                Method<?, ?> method = getMethod(className, methodName, String.valueOf(lineNumber));
+                callStack.push(new CallMethod(i, lineNumber, method));
+            } else {
+                CallMethod callMethod = callStack.get(i);
+                // Is this the correct method for this stack
+                if (!callMethod.getClassName().equals(className) || callMethod.lineNumber != lineNumber) {
+                    // Found a different method on the stack, replace it with the current stack method
+                    // At this point we can look at the children of the method to see if there is a method for the corresponding stack element
+                    Method<?, ?> method = getMethod(className, methodName, String.valueOf(lineNumber));
+                    // This needs to be optimized somehow, retaining the data structure, and only
+                    // replacing the methods on the stack by using the ordinal values of the depth that
+                    // the method is at in the stack at this time, i.e. don't create new objects, just
+                    // replace them
+                    callMethod.setProperties(method);
+                }
+            }
+        }
+        return stackTraceElements.length - 1;
     }
 
     /**
-     * This method is called by the byte code injection at the end of a method, i.e. when a thread returns from a method. This can happen in a return, or when
-     * an exception is thrown.
+     * This method is called by the byte code injection at the end of a method, i.e. when a thread returns from a method.
+     * This can happen in a return, or when an exception is thrown.
      *
      * @param className         the name of the class where the thread is entering the method
      * @param methodName        the name of the method in the class that is being executed
@@ -90,11 +158,16 @@ public final class Collector implements IConstants {
      */
     @SuppressWarnings("unused")
     public static void collectEnd(final String className, final String methodName, final String methodDescription) {
-        Method<?, ?> method = getMethod(className, methodName, methodDescription);
-        method.setEndTime(System.nanoTime());
-        long executionTime = method.getEndTime() - method.getStartTime();
-        long totalTime = method.getTotalTime() + executionTime;
-        method.setTotalTime(totalTime);
+        long threadId = Thread.currentThread().getId();
+        Stack<CallMethod> callStack = CALL_STACKS.get(threadId);
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        CallMethod callMethod = callStack.get(stackTraceElements.length - 1);
+        callMethod.setEndTime(System.nanoTime());
+
+        long executionTime = callMethod.getEndTime() - callMethod.getStartTime();
+        long totalTime = callMethod.getTotalTime() + executionTime;
+
+        callMethod.setTotalTime(totalTime);
     }
 
     /**
@@ -133,7 +206,8 @@ public final class Collector implements IConstants {
      * @param methodDescription the description of the method
      * @param lineNumber        the line number of the line that is calling this method
      */
-    public static void collectCoverage(final String className, final String methodName, final String methodDescription, final int lineNumber) {
+    public static void collectCoverage(final String className, final String methodName, final String methodDescription,
+                                       final int lineNumber) {
         Line<?, ?> line = getLine(className, methodName, methodDescription, lineNumber);
         line.increment();
     }
@@ -146,7 +220,8 @@ public final class Collector implements IConstants {
      * @param methodName        the name of the method that the line is in
      * @param methodDescription the description of the method
      */
-    public static void collectLine(final String className, final String methodName, final String methodDescription, final Integer lineNumber) {
+    public static void collectLine(final String className, final String methodName, final String methodDescription,
+                                   final Integer lineNumber) {
         getLine(className, methodName, methodDescription, lineNumber);
     }
 
@@ -157,7 +232,7 @@ public final class Collector implements IConstants {
      * @param source    the source for the class
      */
     public static void collectSource(final String className, final String source) {
-        Class<Package<?, ?>, Method<?, ?>> klass = getClass(className);
+        Class<Package, Method> klass = getClass(className);
         // We only set the source if it is null
         if (klass.getSource() == null && source != null && !"".equals(source.trim())) {
             klass.setSource(source);
@@ -171,7 +246,6 @@ public final class Collector implements IConstants {
                 LOGGER.warn("Couldn't make directories : " + file.getAbsolutePath());
             }
         }
-        // LOGGER.error("Collecting source : " + className + ", " + file.getAbsolutePath());
         // We try to delete the old file first
         boolean deleted = file.delete();
         if (!deleted) {
@@ -193,15 +267,16 @@ public final class Collector implements IConstants {
     }
 
     /**
-     * This method is called after each jumps in the method graph. Every time there is a jump the complexity goes up one point. Jumps include if else
-     * statements, or just if, throws statements, switch and so on.
+     * This method is called after each jumps in the method graph. Every time there is a jump the complexity goes up one
+     * point. Jumps include if else statements, or just if, throws statements, switch and so on.
      *
      * @param className         the name of the class the method is in
      * @param methodName        the name of the method
      * @param methodDescription the methodDescriptionription of the method
      * @param complexity        the complexity of the method
      */
-    public static void collectComplexity(final String className, final String methodName, final String methodDescription, final double complexity) {
+    public static void collectComplexity(final String className, final String methodName, final String methodDescription,
+                                         final double complexity) {
         Method<?, ?> method = getMethod(className, methodName, methodDescription);
         method.setComplexity(complexity);
     }
@@ -225,17 +300,18 @@ public final class Collector implements IConstants {
                 continue;
             }
             // Exclude java.lang classes and packages
-            if (Configuration.getConfiguration().excluded(packageName) || Configuration.getConfiguration().excluded(targetPackageName)) {
+            if (Configuration.getConfiguration().excluded(packageName) || Configuration.getConfiguration()
+                    .excluded(targetPackageName)) {
                 continue;
             }
             // Add the target package name to the afferent packages for this package
-            Class<Package<?, ?>, Method<?, ?>> klass = getClass(className);
+            Class<Package, Method> klass = getClass(className);
             Afferent afferent = getAfferent(klass, targetPackageName);
             if (!klass.getAfferent().contains(afferent)) {
                 klass.getAfferent().add(afferent);
             }
             // Add this package to the efferent packages of the target
-            Class<Package<?, ?>, Method<?, ?>> targetClass = getClass(targetClassName);
+            Class<Package, Method> targetClass = getClass(targetClassName);
             Efferent efferent = getEfferent(targetClass, packageName);
             if (!targetClass.getEfferent().contains(efferent)) {
                 targetClass.getEfferent().add(efferent);
@@ -251,7 +327,8 @@ public final class Collector implements IConstants {
      * @param methodDescription the description of the method
      * @param access            the access opcode associated with the method
      */
-    public static void collectAccess(final String className, final String methodName, final String methodDescription, final Integer access) {
+    public static void collectAccess(final String className, final String methodName, final String methodDescription,
+                                     final Integer access) {
         Method<?, ?> method = getMethod(className, methodName, methodDescription);
         method.setAccess(access);
     }
@@ -263,7 +340,7 @@ public final class Collector implements IConstants {
      * @param access    the access opcode associated with the class
      */
     public static void collectAccess(final String className, final Integer access) {
-        Class<Package<?, ?>, Method<?, ?>> klass = getClass(className);
+        Class<Package, Method> klass = getClass(className);
         if (1537 == access) {
             klass.setInterfaze(true);
         }
@@ -277,8 +354,8 @@ public final class Collector implements IConstants {
      * @param outerName the name of the outer class
      */
     public static void collectInnerClass(final String innerName, final String outerName) {
-        Class<?, ?> innerClass = getClass(innerName);
-        Class<?, ?> outerClass = getClass(outerName);
+        Class<Package, Method> innerClass = getClass(innerName);
+        Class<Package, Method> outerClass = getClass(outerName);
         if (innerClass.getOuterClass() == null) {
             innerClass.setOuterClass(outerClass);
         }
@@ -295,9 +372,10 @@ public final class Collector implements IConstants {
      * @param outerMethodName        the method name in the case this is an in-method class definition
      * @param outerMethodDescription the description of the method for anonymous and inline inner classes
      */
-    public static void collectOuterClass(final String innerName, final String outerName, final String outerMethodName, final String outerMethodDescription) {
-        Class<?, ?> innerClass = getClass(innerName);
-        Class<?, ?> outerClass = getClass(outerName);
+    public static void collectOuterClass(final String innerName, final String outerName, final String outerMethodName,
+                                         final String outerMethodDescription) {
+        Class<Package, Method> innerClass = getClass(innerName);
+        Class<Package, Method> outerClass = getClass(outerName);
         if (innerClass.getOuterClass() == null) {
             innerClass.setOuterClass(outerClass);
         }
@@ -306,7 +384,7 @@ public final class Collector implements IConstants {
         }
         if (innerClass.getOuterMethod() == null) {
             if (outerMethodName != null) {
-                Method<?, ?> outerMethod = getMethod(outerName, outerMethodName, outerMethodDescription);
+                Method<Class, Line> outerMethod = getMethod(outerName, outerMethodName, outerMethodDescription);
                 innerClass.setOuterMethod(outerMethod);
             }
         }
@@ -334,7 +412,7 @@ public final class Collector implements IConstants {
         return pakkage;
     }
 
-    private static Class<Package<?, ?>, Method<?, ?>> getClass(final String className) {
+    private static Class<Package, Method> getClass(final String className) {
         long id = Toolkit.hash(className);
         Class klass = DATABASE.find(Class.class, id);
 
@@ -361,7 +439,7 @@ public final class Collector implements IConstants {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Method<?, ?> getMethod(final String className, final String methodName, final String methodDescription) {
+    private static Method<Class, Line> getMethod(final String className, final String methodName, final String methodDescription) {
         String cleanMethodName = methodName.replace('<', ' ').replace('>', ' ').trim();
 
         long id = Toolkit.hash(className, cleanMethodName, methodDescription);
@@ -390,7 +468,8 @@ public final class Collector implements IConstants {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected static Line<?, ?> getLine(final String className, final String methodName, final String methodDescription, final double lineNumber) {
+    protected static Line<?, ?> getLine(final String className, final String methodName, final String methodDescription,
+                                        final double lineNumber) {
         long id = Toolkit.hash(className, methodName, lineNumber);
         Line line = DATABASE.find(Line.class, id);
 

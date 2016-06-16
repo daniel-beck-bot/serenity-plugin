@@ -6,17 +6,15 @@ import com.ikokoon.toolkit.Toolkit;
 import org.objectweb.asm.ClassVisitor;
 
 import java.io.*;
-import java.util.Enumeration;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 /**
- * This class looks through the classpath and collects metrics on the classes that were not instantiated by the classloader during the unit tests and creates a
- * visitor chain for the class that will collect the complexity and dependency metrics for the class.
+ * This class looks through the classpath and collects metrics on the classes that were not instantiated by the
+ * classloader during the unit tests and creates a visitor chain for the class that will collect the complexity and
+ * dependency metrics for the class.
  *
  * @author Michael Couck
  * @version 01.10
@@ -38,7 +36,8 @@ public class Accumulator extends AProcess {
     public Accumulator(final IProcess parent) {
         super(parent);
         Configuration configuration = Configuration.getConfiguration();
-        CLASS_ADAPTER_CLASSES = configuration.classAdapters.toArray(new java.lang.Class[Configuration.getConfiguration().classAdapters.size()]);
+        List<Class<ClassVisitor>> classAdapters = configuration.getClassAdapters();
+        CLASS_ADAPTER_CLASSES = classAdapters.toArray(new java.lang.Class[classAdapters.size()]);
     }
 
     /**
@@ -47,7 +46,7 @@ public class Accumulator extends AProcess {
     public void execute() {
         super.execute();
         // All the files that we are interested in
-        Set<File> files = new TreeSet<File>();
+        Set<File> files = new TreeSet<>();
 
         // Look for all jars below this directory to find some source
         File dotDirectory = new File(".");
@@ -81,7 +80,7 @@ public class Accumulator extends AProcess {
                     files.add(file);
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.error("Exception walking the file tree : ", e);
         }
     }
@@ -93,7 +92,8 @@ public class Accumulator extends AProcess {
     }
 
     /**
-     * Processes a directory on a file system, looks for class files and feeds the byte code into the adapter chain for collecting the metrics for the class.
+     * Processes a directory on a file system, looks for class files and feeds the byte code into the adapter chain for
+     * collecting the metrics for the class.
      *
      * @param file the directory or file to look in for the class data
      */
@@ -112,8 +112,8 @@ public class Accumulator extends AProcess {
         String filePath = Toolkit.slashToDot(Toolkit.cleanFilePath(file.getAbsolutePath()));
         byte[] classBytes = Toolkit.getContents(file).toByteArray();
         // Strip the beginning of the path off the name
-        for (String packageName : Configuration.getConfiguration().includedPackages) {
-            if (filePath.indexOf(packageName) > -1) {
+        for (String packageName : Configuration.getConfiguration().getIncludedPackages()) {
+            if (filePath.contains(packageName)) {
                 int indexOfPackageName = filePath.lastIndexOf(packageName);
                 int classIndex = filePath.lastIndexOf(".class");
                 if (classIndex > -1) {
@@ -166,17 +166,17 @@ public class Accumulator extends AProcess {
     }
 
     /**
-     * Processes a jar or zip file or something like it, looks for class and feeds the byte code into the adapter chain for collecting the metrics for the
-     * class.
+     * Processes a jar or zip file or something like it, looks for class and feeds the byte code into the adapter chain
+     * for collecting the metrics for the class.
      *
      * @param file the file to look in for the class data
      */
     private void processJar(final File file) {
-        JarFile jarFile = null;
+        JarFile jarFile;
         try {
             jarFile = new JarFile(file);
-        } catch (Exception e) {
-            logger.error("Exeption accessing the jar : " + file, e);
+        } catch (final Exception e) {
+            logger.error("Exception accessing the jar : " + file, e);
             return;
         }
         Enumeration<JarEntry> jarEntries = jarFile.entries();
@@ -188,11 +188,11 @@ public class Accumulator extends AProcess {
                 continue;
             }
             try {
-                logger.debug("Processsing entry : " + className);
+                logger.debug("Processing entry : " + className);
                 InputStream inputStream = jarFile.getInputStream(jarEntry);
                 byte[] classFileBytes = Toolkit.getContents(inputStream).toByteArray();
-                ByteArrayOutputStream source = null;
-                if (jarEntry.getName().indexOf("$") == -1) {
+                ByteArrayOutputStream source;
+                if (!jarEntry.getName().contains("$")) {
                     source = getSource(jarFile, entryName);
                 } else {
                     source = new ByteArrayOutputStream();

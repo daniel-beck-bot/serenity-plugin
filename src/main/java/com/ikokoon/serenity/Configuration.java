@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.*;
 
 /**
- * The configuration object holds the parameters for the processing, some from the system parameters that
+ * The INSTANCE object holds the parameters for the processing, some from the system parameters that
  * can be set by the user and some internal like packages to be excluded always for example java.lang.
  *
  * @author Michael Couck
@@ -25,9 +25,9 @@ import java.util.*;
 public class Configuration {
 
     /**
-     * The instance of the configuration.
+     * The instance of the INSTANCE.
      */
-    private static Configuration configuration = new Configuration();
+    private static Configuration INSTANCE;
     /**
      * The separator for the package names.
      */
@@ -36,27 +36,31 @@ public class Configuration {
     /**
      * The LOGGER for the class.
      */
-    public Logger logger;
+    private Logger logger;
     /**
      * Packages that are included in the enhancement.
      */
-    public Set<String> includedPackages = new TreeSet<>();
+    private Set<String> includedPackages = new TreeSet<>();
     /**
      * Patterns in class names that are excluded from enhancement.
      */
-    public Set<String> excludedPackages = new TreeSet<>();
+    private Set<String> excludedPackages = new TreeSet<>();
+
     /**
      * The class adapters that the system will chain.
      */
-    public List<Class<ClassVisitor>> classAdapters = new ArrayList<>();
+    private List<Class<ClassVisitor>> classAdapters = new ArrayList<>();
 
     /**
-     * System wide access to the configuration.
+     * System wide access to the INSTANCE.
      *
-     * @return the configuration for the system
+     * @return the INSTANCE for the system
      */
     public static synchronized Configuration getConfiguration() {
-        return configuration;
+        if (INSTANCE == null) {
+            INSTANCE = new Configuration();
+        }
+        return INSTANCE;
     }
 
     /**
@@ -225,12 +229,25 @@ public class Configuration {
     }
 
     private void addDefaultExcludedPackages() {
-        excludedPackages.add("java.lang");
+        excludedPackages.add("java");
         excludedPackages.add("sun");
         excludedPackages.add("sunw");
         excludedPackages.add("com.sun");
         excludedPackages.add("Test");
+        excludedPackages.add("Integration");
         excludedPackages.add(Project.class.getPackage().getName());
+    }
+
+    public Set<String> getIncludedPackages() {
+        return includedPackages;
+    }
+
+    public Set<String> getExcludedPackages() {
+        return excludedPackages;
+    }
+
+    public List<Class<ClassVisitor>> getClassAdapters() {
+        return classAdapters;
     }
 
 }

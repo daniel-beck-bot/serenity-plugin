@@ -15,6 +15,7 @@ import com.ikokoon.target.consumer.TargetConsumer;
  * @since 12.07.09
  * @version 01.00
  */
+@SuppressWarnings({"FieldCanBeLocal", "unused", "JavaDoc", "UnnecessaryLocalVariable", "EqualsBetweenInconvertibleTypes", "StatementWithEmptyBody"})
 @Unique(fields = { Target.NAME })
 @Annotation(fields = { Target.NAME })
 public class Target<E, F> implements ITarget<E, F>, Serializable {

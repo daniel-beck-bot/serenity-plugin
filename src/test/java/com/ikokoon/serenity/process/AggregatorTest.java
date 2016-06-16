@@ -24,6 +24,7 @@ import java.util.Date;
 import java.util.Set;
 import java.util.TreeSet;
 
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
 import static org.junit.Assert.*;
 
 /**
@@ -42,8 +43,8 @@ public class AggregatorTest extends ATest implements IConstants {
             public void execute() {
                 File odbDataBaseFile = new File("./src/test/resources/findbugs/serenity.odb");
 
-                IDataBase odbDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, odbDataBaseFile.getAbsolutePath(), null);
-                IDataBase ramDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseRam.class, "ramDatabase.ram", odbDataBase);
+                IDataBase odbDataBase = getDataBase(DataBaseOdb.class, odbDataBaseFile.getAbsolutePath(), Boolean.FALSE, null);
+                IDataBase ramDataBase = getDataBase(DataBaseRam.class, "ramDatabase.ram", Boolean.FALSE, odbDataBase);
 
                 new Aggregator(null, ramDataBase).execute();
 
@@ -56,7 +57,7 @@ public class AggregatorTest extends ATest implements IConstants {
 
                 ramDataBase.close();
 
-                odbDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, odbDataBaseFile.getAbsolutePath(), mockInternalDataBase);
+                odbDataBase = getDataBase(DataBaseOdb.class, odbDataBaseFile.getAbsolutePath(), Boolean.FALSE, mockInternalDataBase);
                 project = (Project<?, ?>) odbDataBase.find(Project.class, Toolkit.hash(Project.class.getName()));
                 LOGGER.warn(ToStringBuilder.reflectionToString(project));
 
@@ -133,7 +134,7 @@ public class AggregatorTest extends ATest implements IConstants {
         Set<Line<?, ?>> lines = new TreeSet<Line<?, ?>>();
         getClassesMethodsAndLines(pakkage, classes, methods, lines);
 
-        for (Method<?, ?> method : methods) {
+        for (Method method : methods) {
             new MethodAggregator(dataBase, method).aggregate();
             double executed = getExecuted(method);
             double coverage = (executed / (double) method.getChildren().size()) * 100d;
@@ -157,7 +158,7 @@ public class AggregatorTest extends ATest implements IConstants {
         visitClass(DependencyClassAdapter.class, IDiscovery.class.getName());
         visitClass(DependencyClassAdapter.class, Discovery.class.getName());
 
-        Package<?, ?> pakkage = dataBase.find(Package.class, Toolkit.hash(Discovery.class.getPackage().getName()));
+        Package pakkage = dataBase.find(Package.class, Toolkit.hash(Discovery.class.getPackage().getName()));
 
         new PackageAggregator(dataBase, pakkage).aggregate();
 
@@ -173,7 +174,7 @@ public class AggregatorTest extends ATest implements IConstants {
     public void aggregateProject() throws Exception {
         File odbDataBaseFile = new File("./src/test/resources/isearch/serenity-aggregator.odb");
 
-        IDataBase dataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, odbDataBaseFile.getAbsolutePath(), null);
+        IDataBase dataBase = getDataBase(DataBaseOdb.class, odbDataBaseFile.getAbsolutePath(), Boolean.FALSE, null);
         DataBaseToolkit.dump(dataBase, new DataBaseToolkit.ICriteria() {
             @Override
             public boolean satisfied(final Composite<?, ?> composite) {
@@ -307,18 +308,18 @@ public class AggregatorTest extends ATest implements IConstants {
     }
 
     private void getClassesMethodsAndLines(Package<?, ?> pakkage, Set<Class<?, ?>> classes, Set<Method<?, ?>> methods, Set<Line<?, ?>> lines) {
-        for (Class<?, ?> klass : pakkage.getChildren()) {
+        for (Class<Package, Method> klass : pakkage.getChildren()) {
             classes.add(klass);
-            for (Method<?, ?> method : klass.getChildren()) {
+            for (Method<Class, Line> method : klass.getChildren()) {
                 methods.add(method);
-                for (Line<?, ?> line : method.getChildren()) {
+                for (Line line : method.getChildren()) {
                     lines.add(line);
                 }
             }
         }
     }
 
-    private double getExecuted(Method<?, ?> method) {
+    private double getExecuted(Method<Class, Line> method) {
         double executed = 0d;
         for (Line<?, ?> line : method.getChildren()) {
             if (line.getCounter() > 0d) {

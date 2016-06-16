@@ -10,13 +10,13 @@ import java.util.List;
  * @version 01.00
  */
 @Unique(fields = { Composite.NAME })
-public class Class<E, F> extends Composite<Package<?, ?>, Method<?, ?>> implements Comparable<Class<?, ?>>, Serializable {
+public class Class<E, F> extends Composite<Package, Method> implements Comparable<Class<?, ?>>, Serializable {
 
 	private int access;
 	private String name;
-	private Class<?, ?> outerClass;
-	private Method<?, ?> outerMethod;	
-	private List<Class<?, ?>> innerClasses = new ArrayList<Class<?, ?>>();
+	private Class<Package, Method> outerClass;
+	private Method<Class, Line> outerMethod;
+	private List<Class<Package, Method>> innerClasses = new ArrayList<>();
 
 	private double coverage;
 	private double complexity;
@@ -29,10 +29,10 @@ public class Class<E, F> extends Composite<Package<?, ?>, Method<?, ?>> implemen
 
 	private double allocations;
 
-	private List<Efferent> efferent = new ArrayList<Efferent>();
-	private List<Afferent> afferent = new ArrayList<Afferent>();
+	private List<Efferent> efferent = new ArrayList<>();
+	private List<Afferent> afferent = new ArrayList<>();
 
-	private List<Snapshot<?, ?>> snapshots = new ArrayList<Snapshot<?, ?>>();
+	private List<Snapshot<?, ?>> snapshots = new ArrayList<>();
 
 	private String source;
 
@@ -56,7 +56,7 @@ public class Class<E, F> extends Composite<Package<?, ?>, Method<?, ?>> implemen
 		return outerClass;
 	}
 
-	public void setOuterClass(Class<?, ?> outerClass) {
+	public void setOuterClass(Class<Package, Method> outerClass) {
 		this.outerClass = outerClass;
 	}
 
@@ -64,15 +64,15 @@ public class Class<E, F> extends Composite<Package<?, ?>, Method<?, ?>> implemen
 		return outerMethod;
 	}
 
-	public void setOuterMethod(Method<?, ?> outerMethod) {
+	public void setOuterMethod(Method<Class, Line> outerMethod) {
 		this.outerMethod = outerMethod;
 	}
 
-	public List<Class<?, ?>> getInnerClasses() {
+	public List<Class<Package, Method>> getInnerClasses() {
 		return innerClasses;
 	}
 
-	public void setInnerClasses(List<Class<?, ?>> innerClasses) {
+	public void setInnerClasses(List<Class<Package, Method>> innerClasses) {
 		this.innerClasses = innerClasses;
 	}
 

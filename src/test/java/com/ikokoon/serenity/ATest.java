@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -61,13 +62,14 @@ public abstract class ATest implements IConstants {
         LoggingConfigurator.configure();
         LOGGER = Logger.getLogger(ATest.class);
         System.setProperty(IConstants.INCLUDED_ADAPTERS_PROPERTY, "profiling;coverage;complexity;dependency");
-        Configuration.getConfiguration().includedPackages.add(IConstants.class.getPackage().getName());
-        Configuration.getConfiguration().includedPackages.add(Target.class.getPackage().getName());
-        Configuration.getConfiguration().includedPackages.add(Configuration.class.getPackage().getName());
-        Configuration.getConfiguration().includedPackages.add("com.ikokoon");
-        Configuration.getConfiguration().excludedPackages.add(Object.class.getPackage().getName());
+        Configuration configuration = Configuration.getConfiguration();
+        configuration.getIncludedPackages().add(IConstants.class.getPackage().getName());
+        configuration.getIncludedPackages().add(Target.class.getPackage().getName());
+        configuration.getIncludedPackages().add(Configuration.class.getPackage().getName());
+        configuration.getIncludedPackages().add("com.ikokoon");
+        configuration.getExcludedPackages().add(Object.class.getPackage().getName());
 
-        dataBase = IDataBase.DataBaseManager.getDataBase(DataBaseRam.class, IConstants.DATABASE_FILE_RAM, mockInternalDataBase);
+        dataBase = getDataBase(DataBaseRam.class, IConstants.DATABASE_FILE_RAM, Boolean.FALSE, mockInternalDataBase);
         Collector.initialize(dataBase);
     }
 
@@ -76,14 +78,15 @@ public abstract class ATest implements IConstants {
         dataBase.close();
     }
 
-    protected void visitClass(java.lang.Class<?> visitorClass, String className) {
+    protected void visitClass(final java.lang.Class<?> visitorClass, final String className) {
         byte[] classBytes = getClassBytes(className);
         byte[] sourceBytes = getSourceBytes(className);
         visitClass(visitorClass, className, classBytes, sourceBytes);
     }
 
     @SuppressWarnings("unchecked")
-    protected ClassWriter visitClass(java.lang.Class<?> visitorClass, String className, byte[] classBytes, byte[] sourceBytes) {
+    protected ClassWriter visitClass(final java.lang.Class<?> visitorClass, final String className, final byte[] classBytes,
+                                     final byte[] sourceBytes) {
         ByteArrayOutputStream source = new ByteArrayOutputStream();
         try {
             source.write(sourceBytes);
@@ -93,13 +96,13 @@ public abstract class ATest implements IConstants {
         return (ClassWriter) VisitorFactory.getClassVisitor(new java.lang.Class[]{visitorClass}, className, classBytes, source);
     }
 
-    protected byte[] getClassBytes(String className) {
+    protected byte[] getClassBytes(final String className) {
         String classPath = Toolkit.dotToSlash(className) + ".class";
         InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream(classPath);
         return Toolkit.getContents(inputStream).toByteArray();
     }
 
-    protected byte[] getSourceBytes(String className) {
+    protected byte[] getSourceBytes(final String className) {
         String classPath = Toolkit.dotToSlash(className) + ".java";
         InputStream inputStream = ClassLoader.getSystemClassLoader().getResourceAsStream(classPath);
         return Toolkit.getContents(inputStream).toByteArray();
@@ -124,7 +127,7 @@ public abstract class ATest implements IConstants {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Class<?, ?> getClass(Package<?, ?> pakkage) {
+    protected Class<?, ?> getClass(final Package<?, ?> pakkage) {
         Class klass = new Class();
         klass.setParent(pakkage);
         pakkage.getChildren().add(klass);
@@ -150,7 +153,7 @@ public abstract class ATest implements IConstants {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Method<?, ?> getMethod(Class<?, ?> klass) {
+    protected Method<?, ?> getMethod(final Class<?, ?> klass) {
         Method method = new Method();
         method.setParent(klass);
         method.setClassName(klass.getName());
@@ -164,7 +167,7 @@ public abstract class ATest implements IConstants {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected Line<?, ?> getLine(Method<?, ?> method) {
+    protected Line<?, ?> getLine(final Method method) {
         Line line = new Line();
         line.setCounter(1d);
         line.setNumber(lineNumber);

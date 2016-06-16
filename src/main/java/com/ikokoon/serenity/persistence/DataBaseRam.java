@@ -12,8 +12,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This is the in memory database. Several options were explored including DB4O, Neodatis, JPA, SQL, and finally none were performant enough. As well
- * as that several hybrids were investigated like including a l1 cache and a l2 cache, but the actual persistence in the case of JPA and SQL was just
+ * This is the in memory database. Several options were explored including DB4O, Neodatis, JPA, SQL, and finally none
+ * were performant enough. As well as that several hybrids were investigated like including a l1 cache and a l2 cache,
+ * but the actual persistence in the case of JPA and SQL was just
  * too slow. This class does everything in memory and commits the data finally to the under lying database once the processing is finished.
  *
  * @author Michael Couck
@@ -22,7 +23,7 @@ import java.util.Map;
  */
 public final class DataBaseRam extends DataBase {
 
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+    private Logger logger;
     /**
      * The database file for access.
      */
@@ -34,7 +35,7 @@ public final class DataBaseRam extends DataBase {
     /**
      * The closed flag.
      */
-    private boolean closed = true;
+    private boolean closed;
 
     /**
      * This is the index of packages, classes, methods and lines.
@@ -48,21 +49,19 @@ public final class DataBaseRam extends DataBase {
      * @param dataBaseFile file fo open the database on
      * @param dataBase     the underlying database that will actually persist the objects to the file system
      */
-    DataBaseRam(String dataBaseFile, IDataBase dataBase) {
-        logger.info("Opening RAM database with " + dataBase + " underneath.");
+    DataBaseRam(final String dataBaseFile, final IDataBase dataBase) {
+        this.logger = LoggerFactory.getLogger(this.getClass());
+        this.logger.info("Opening RAM database with " + dataBase + " underneath.");
         this.dataBaseFile = dataBaseFile;
         this.dataBase = dataBase;
-        index.clear();
-        closed = false;
+        this.index.clear();
+        this.closed = false;
     }
 
     /**
      * {@inheritDoc}
      */
-    public synchronized final <E extends Composite<?, ?>> E persist(E composite) {
-//		if (com.ikokoon.serenity.model.Class.class.isAssignableFrom(composite.getClass())) {
-//			logger.error("Persisting : " + composite);
-//		}
+    public synchronized final <E extends Composite<?, ?>> E persist(final E composite) {
         setIds(composite);
         return composite;
     }
@@ -71,7 +70,7 @@ public final class DataBaseRam extends DataBase {
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public synchronized final <E extends Composite<?, ?>> E find(Class<E> klass, Long id) {
+    public synchronized final <E extends Composite<?, ?>> E find(final Class<E> klass, final Long id) {
         return (E) search(klass, index, id);
     }
 
@@ -79,7 +78,7 @@ public final class DataBaseRam extends DataBase {
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public synchronized final <E extends Composite<?, ?>> E find(Class<E> klass, List<?> parameters) {
+    public synchronized final <E extends Composite<?, ?>> E find(final Class<E> klass, final List<?> parameters) {
         Long id = Toolkit.hash(parameters.toArray());
         return (E) search(klass, index, id);
     }
@@ -87,7 +86,7 @@ public final class DataBaseRam extends DataBase {
     /**
      * {@inheritDoc}
      */
-    public synchronized final <E extends Composite<?, ?>> List<E> find(Class<E> klass) {
+    public synchronized final <E extends Composite<?, ?>> List<E> find(final Class<E> klass) {
         return find(klass, 0, Integer.MAX_VALUE);
     }
 
@@ -95,10 +94,10 @@ public final class DataBaseRam extends DataBase {
      * {@inheritDoc}
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public <E extends Composite<?, ?>> List<E> find(Class<E> klass, int start, int end) {
+    public <E extends Composite<?, ?>> List<E> find(final Class<E> klass, final int start, final int end) {
         List<E> list = new ArrayList<>();
         int counter = 0;
-        for (Composite<?, ?> composite : index) {
+        for (final Composite<?, ?> composite : index) {
             if (klass.isInstance(composite)) {
                 list.add((E) composite);
                 if (counter++ >= end) {
@@ -108,8 +107,8 @@ public final class DataBaseRam extends DataBase {
         }
         if (list.size() == 0) {
             // Try to find some in the underlying database
-            if (this.dataBase != null) {
-                list = this.dataBase.find(klass, start, end);
+            if (dataBase != null) {
+                list = dataBase.find(klass, start, end);
                 if (list != null && list.size() > 0) {
                     for (final Composite composite : list) {
                         insert(index, composite);
@@ -124,7 +123,7 @@ public final class DataBaseRam extends DataBase {
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-    public synchronized final <E extends Composite<?, ?>> E remove(Class<E> klass, Long id) {
+    public synchronized final <E extends Composite<?, ?>> E remove(final Class<E> klass, final Long id) {
         Composite<?, ?> composite = find(klass, id);
         if (composite != null) {
             Composite<?, ?> parent = composite.getParent();
@@ -139,8 +138,8 @@ public final class DataBaseRam extends DataBase {
                 logger.warn("Didn't remove composite with id : " + id + ", because it wasn't in the index.");
             }
         }
-        if (this.dataBase != null) {
-            this.dataBase.remove(klass, id);
+        if (dataBase != null) {
+            dataBase.remove(klass, id);
         }
         return (E) composite;
     }
@@ -165,14 +164,16 @@ public final class DataBaseRam extends DataBase {
             logger.info("User tried to close the database again");
             return;
         }
-        logger.info("Comitting and closing the database");
+        logger.info("Committing and closing the database");
 
         try {
             logger.info("Persisting index : " + dataBase);
             if (dataBase != null) {
-                for (Composite<?, ?> composite : index) {
+                for (final Composite<?, ?> composite : index) {
                     if (Package.class.isInstance(composite) || Project.class.isInstance(composite)) {
-                        logger.debug("Persisting : " + composite);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("Persisting : " + composite);
+                        }
                         dataBase.persist(composite);
                     }
                 }
@@ -184,7 +185,7 @@ public final class DataBaseRam extends DataBase {
 
             IDataBaseEvent dataBaseEvent = new DataBaseEvent(this, IDataBaseEvent.Type.DATABASE_CLOSE);
             IDataBase.DataBaseManager.fireDataBaseEvent(dataBaseFile, dataBaseEvent);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.error("Exception committing and closing the database", e);
         }
         closed = true;
@@ -198,14 +199,13 @@ public final class DataBaseRam extends DataBase {
      * @param composite the object to set the id for
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    synchronized final void setIds(Composite<?, ?> composite) {
+    synchronized final void setIds(final Composite<?, ?> composite) {
         if (composite == null) {
             return;
         }
         super.setId(composite);
         // Insert the object into the index
         insert(index, composite);
-        logger.debug("Persisted object : " + composite);
         if (composite instanceof com.ikokoon.serenity.model.Class) {
             String name = ((com.ikokoon.serenity.model.Class) composite).getName();
             if (name.indexOf('/') > -1) {
@@ -214,7 +214,7 @@ public final class DataBaseRam extends DataBase {
             }
         }
         List<Composite<?, ?>> children = (List<Composite<?, ?>>) composite.getChildren();
-        for (Composite<?, ?> child : children) {
+        for (final Composite<?, ?> child : children) {
             setIds(child);
         }
     }
@@ -229,7 +229,7 @@ public final class DataBaseRam extends DataBase {
      * @return the composite from the index, or the underlying database, or null if no such composites exists
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    final <E extends Composite<?, ?>> E search(Class klass, List<Composite<?, ?>> index, long id) {
+    final <E extends Composite<?, ?>> E search(final Class klass, final List<Composite<?, ?>> index, final long id) {
         int low = 0;
         int high = index.size() - 1;
         while (low <= high) {
@@ -261,7 +261,7 @@ public final class DataBaseRam extends DataBase {
      * @param index    the index of composites
      * @param toInsert the composite to insert into the index
      */
-    final void insert(List<Composite<?, ?>> index, Composite<?, ?> toInsert) {
+    final void insert(final List<Composite<?, ?>> index, final Composite<?, ?> toInsert) {
         boolean inserted = false;
         if (index.size() == 0) {
             index.add(toInsert);
@@ -312,10 +312,12 @@ public final class DataBaseRam extends DataBase {
                 }
             }
         }
-        logger.debug("Inserted : " + toInsert + " - " + inserted);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Inserted : " + toInsert + " - " + inserted);
+        }
     }
 
-    public <E extends Composite<?, ?>> List<E> find(Class<E> klass, Map<String, ?> parameters) {
+    public <E extends Composite<?, ?>> List<E> find(final Class<E> klass, final Map<String, ?> parameters) {
         throw new RuntimeException("Not implempented.");
     }
 

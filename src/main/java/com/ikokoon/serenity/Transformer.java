@@ -1,6 +1,7 @@
 package com.ikokoon.serenity;
 
 import com.ikokoon.serenity.instrumentation.VisitorFactory;
+import com.ikokoon.serenity.instrumentation.profiling.ProfilingClassAdviceAdapter;
 import com.ikokoon.serenity.persistence.DataBaseOdb;
 import com.ikokoon.serenity.persistence.DataBaseRam;
 import com.ikokoon.serenity.persistence.DataBaseToolkit;
@@ -20,6 +21,9 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 import java.util.Date;
+import java.util.List;
+
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.*;
 
 /**
  * This class is the entry point for the Serenity code coverage/complexity/dependency/profiling functionality. This
@@ -28,7 +32,7 @@ import java.util.Date;
  *
  * @author Michael Couck
  * @version 01.00
- * @since 12.07.09
+ * @since 12-07-2009
  */
 public class Transformer implements ClassFileTransformer, IConstants {
 
@@ -72,12 +76,16 @@ public class Transformer implements ClassFileTransformer, IConstants {
             INITIALISED = true;
             LoggingConfigurator.configure();
             LOGGER = LoggerFactory.getLogger(Transformer.class);
-            CLASS_ADAPTER_CLASSES = Configuration.getConfiguration().classAdapters.toArray(new Class[Configuration.getConfiguration().classAdapters.size()]);
+
+            Configuration configuration = Configuration.getConfiguration();
+
+            List<Class<ClassVisitor>> classAdapters = configuration.getClassAdapters();
+            CLASS_ADAPTER_CLASSES = classAdapters.toArray(new Class[classAdapters.size()]);
             LOGGER.info("Starting Serenity : ");
             if (instrumentation != null) {
                 instrumentation.addTransformer(new Transformer());
             }
-            String cleanClasses = Configuration.getConfiguration().getProperty(IConstants.CLEAN_CLASSES);
+            String cleanClasses = configuration.getProperty(IConstants.CLEAN_CLASSES);
             if (cleanClasses != null && cleanClasses.equals(Boolean.TRUE.toString())) {
                 File serenityDirectory = new File(IConstants.SERENITY_DIRECTORY);
                 Toolkit.deleteFiles(serenityDirectory, ".class");
@@ -87,7 +95,7 @@ public class Transformer implements ClassFileTransformer, IConstants {
                     }
                 }
             }
-            String deleteDatabaseFile = Configuration.getConfiguration().getProperty(IConstants.DELETE);
+            String deleteDatabaseFile = configuration.getProperty(IConstants.DELETE);
             File file = new File(IConstants.DATABASE_FILE_ODB);
             if (deleteDatabaseFile == null || "true".equals(deleteDatabaseFile)) {
                 LOGGER.info("Deleting database file : " + file.getAbsolutePath());
@@ -97,11 +105,9 @@ public class Transformer implements ClassFileTransformer, IConstants {
             }
 
             // This is the underlying database that will persist the data to the file system
-            IDataBase odbDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, IConstants.DATABASE_FILE_ODB, null);
-            // DataBaseToolkit.clear(odbDataBase);
+            IDataBase odbDataBase = getDataBase(DataBaseOdb.class, IConstants.DATABASE_FILE_ODB, Boolean.TRUE, null);
             // This is the ram database that will hold all the data in memory for better performance
-            IDataBase ramDataBase = IDataBase.DataBaseManager.getDataBase(DataBaseRam.class, IConstants.DATABASE_FILE_RAM, odbDataBase);
-            // DataBaseToolkit.clear(ramDataBase);
+            IDataBase ramDataBase = getDataBase(DataBaseRam.class, IConstants.DATABASE_FILE_RAM, Boolean.FALSE, odbDataBase);
             Collector.initialize(ramDataBase);
             Profiler.initialize(ramDataBase);
             new Listener(null, ramDataBase).execute();
@@ -165,14 +171,32 @@ public class Transformer implements ClassFileTransformer, IConstants {
     /**
      * This method transforms the classes that are specified.
      */
-    public byte[] transform(final ClassLoader loader, final String className, final Class<?> classBeingRedefined, final ProtectionDomain protectionDomain,
-                            final byte[] classBytes) throws IllegalClassFormatException {
-        if (Configuration.getConfiguration().included(className) && !Configuration.getConfiguration().excluded(className)) {
-            LOGGER.debug("Enhancing class : " + className);
+    public byte[] transform(
+            final ClassLoader loader,
+            final String className,
+            final Class<?> classBeingRedefined,
+            final ProtectionDomain protectionDomain,
+            final byte[] classBytes)
+            throws IllegalClassFormatException {
+        Configuration configuration = Configuration.getConfiguration();
+        List<Class<ClassVisitor>> classAdapters = configuration.getClassAdapters();
+        boolean profiling = Boolean.FALSE;
+        try {
+            @SuppressWarnings("unchecked")
+            Class<ClassVisitor> classVisitorClass = (Class<ClassVisitor>) Class.forName(ProfilingClassAdviceAdapter.class.getName());
+            profiling = classAdapters.contains(classVisitorClass);
+        } catch (final ClassNotFoundException e) {
+            LOGGER.error("Error getting profiling class : " + className);
+        }
+        // If we are profiling then we enhance every class
+        if ((profiling || configuration.included(className)) && !configuration.excluded(className)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Enhancing class : " + className);
+            }
             ByteArrayOutputStream source = new ByteArrayOutputStream(0);
             ClassWriter writer = (ClassWriter) VisitorFactory.getClassVisitor(CLASS_ADAPTER_CLASSES, className, classBytes, source);
             byte[] enhancedClassBytes = writer.toByteArray();
-            String writeClasses = Configuration.getConfiguration().getProperty(IConstants.WRITE_CLASSES);
+            String writeClasses = configuration.getProperty(IConstants.WRITE_CLASSES);
             if (writeClasses != null && writeClasses.equals(Boolean.TRUE.toString())) {
                 writeClass(className, enhancedClassBytes);
             }
@@ -197,7 +221,6 @@ public class Transformer implements ClassFileTransformer, IConstants {
         String fileName = className.replaceFirst(Toolkit.classNameToPackageName(className), "") + ".class";
         File directory = new File(IConstants.SERENITY_DIRECTORY + File.separator + directoryPath);
         if (!directory.exists()) {
-            //noinspection ResultOfMethodCallIgnored
             boolean mkDirs = directory.mkdirs();
             if (!mkDirs) {
                 LOGGER.warn("Couldn't make directory to write out injected classes : " + directory.getAbsolutePath());

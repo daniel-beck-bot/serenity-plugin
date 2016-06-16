@@ -14,6 +14,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
 import static org.junit.Assert.assertTrue;
 
 @Ignore
@@ -25,7 +26,7 @@ public class ListenerTest extends ATest {
     public static void beforeClass() {
         ATest.beforeClass();
         String dataBaseFile = "./src/test/resources/isearch/merge/tag.odb";
-        dataBase = IDataBase.DataBaseManager.getDataBase(DataBaseOdb.class, dataBaseFile, mockInternalDataBase);
+        dataBase = getDataBase(DataBaseOdb.class, dataBaseFile, Boolean.FALSE, mockInternalDataBase);
     }
 
     @Test

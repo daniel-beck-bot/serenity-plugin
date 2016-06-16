@@ -19,7 +19,8 @@ import java.io.ByteArrayOutputStream;
 public class VisitorFactory {
 
     /**
-     * Instantiates a chain of class visitors. Each visitor can modify or add code to the class as it is parsed and the writer will output the new class byte
+     * Instantiates a chain of class visitors. Each visitor can modify or add code to the class as it is parsed and
+     * the writer will output the new class byte
      * code.
      *
      * @param classAdapterClasses the class visitor classes
@@ -28,7 +29,8 @@ public class VisitorFactory {
      * @param source              the output stream of the source code for the class
      * @return the class visitor/writer
      */
-    public static ClassVisitor getClassVisitor(Class<ClassVisitor>[] classAdapterClasses, String className, byte[] classBytes, ByteArrayOutputStream source) {
+    public static ClassVisitor getClassVisitor(final Class<ClassVisitor>[] classAdapterClasses, final String className,
+                                               final byte[] classBytes, final ByteArrayOutputStream source) {
         ClassReader reader = new ClassReader(classBytes);
         // 'true' for ASM 2.2, 'ClassWriter.COMPUTE_MAXS' for ASM 3++
         // ClassWriter writer = new ClassWriter(reader, true);
@@ -54,8 +56,8 @@ public class VisitorFactory {
      * @param methodDescription the description or signature of the method in byte code format
      * @return the method visitor
      */
-    public static MethodVisitor getMethodVisitor(MethodVisitor visitor, Class<?> klass, int access, String className, String methodName,
-                                                 String methodDescription) {
+    public static MethodVisitor getMethodVisitor(final MethodVisitor visitor, final Class<?> klass, final int access,
+                                                 final String className, final String methodName, final String methodDescription) {
         Object[] parameters = new Object[]{visitor, access, className, methodName, methodDescription};
         return (MethodVisitor) ObjectFactory.getObject(klass, parameters);
     }
@@ -70,7 +72,8 @@ public class VisitorFactory {
      * @param signature   the signature of the field in byte code
      * @return the field visitor
      */
-    public static FieldVisitor getFieldVisitor(FieldVisitor visitor, Class<?> klass, String className, String description, String signature) {
+    public static FieldVisitor getFieldVisitor(final FieldVisitor visitor, final Class<?> klass, final String className,
+                                               final String description, final String signature) {
         Object[] parameters = new Object[]{visitor, className, description, signature};
         return (FieldVisitor) ObjectFactory.getObject(klass, parameters);
     }
@@ -82,7 +85,7 @@ public class VisitorFactory {
      * @param signature the signature in byte code to visit
      * @return the signature to be visited
      */
-    public static SignatureVisitor getSignatureVisitor(String className, String signature) {
+    public static SignatureVisitor getSignatureVisitor(final String className, final String signature) {
         SignatureReader reader = new SignatureReader(signature);
         SignatureVisitor adapter = new DependencySignatureAdapter(className);
         reader.accept(adapter);
@@ -97,7 +100,7 @@ public class VisitorFactory {
      * @param description the description or signature of the annotation
      * @return the annotation visitor
      */
-    public static AnnotationVisitor getAnnotationVisitor(AnnotationVisitor visitor, String className, String description) {
+    public static AnnotationVisitor getAnnotationVisitor(final AnnotationVisitor visitor, final String className, final String description) {
         return new DependencyAnnotationAdapter(visitor, className, description);
     }
 
