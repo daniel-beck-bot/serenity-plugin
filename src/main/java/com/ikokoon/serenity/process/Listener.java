@@ -33,7 +33,7 @@ public class Listener extends AProcess {
      */
     public void execute() {
         try {
-            logger.info("Starting socket listener on port : " + IConstants.PORT);
+            logger.info("Starting socket listener on port : " + IConstants.LISTENER_PORT);
             Timer timer = new Timer();
             TimerTask timerTask = new TimerTask() {
                 @Override
@@ -41,7 +41,7 @@ public class Listener extends AProcess {
                     logger.info("Running : " + this);
                     ServerSocket serverSocket = null;
                     try {
-                        serverSocket = new ServerSocket(IConstants.PORT);
+                        serverSocket = new ServerSocket(IConstants.LISTENER_PORT);
                         //noinspection InfiniteLoopStatement
                         while (true) {
                             try {
@@ -58,7 +58,7 @@ public class Listener extends AProcess {
                                     }
                                 }
                             } catch (Exception e) {
-                                logger.error("Exception listening on the prot : " + IConstants.PORT, e);
+                                logger.error("Exception listening on the prot : " + IConstants.LISTENER_PORT, e);
                             }
                         }
                     } catch (Exception e) {
@@ -76,7 +76,7 @@ public class Listener extends AProcess {
             };
             timer.schedule(timerTask, 1000);
         } catch (Exception e) {
-            logger.error("Exeption listening on the port : " + IConstants.PORT, e);
+            logger.error("Exeption listening on the port : " + IConstants.LISTENER_PORT, e);
         }
     }
 }

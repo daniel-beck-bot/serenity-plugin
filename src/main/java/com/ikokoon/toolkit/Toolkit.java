@@ -15,12 +15,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * This class contains methods for changing a string to the byte code representation and visa versa. Also some other nifty functions like
- * stripping a string of white space etc.
+ * This class contains methods for changing a string to the byte code representation and visa
+ * versa. Also some other nifty functions like stripping a string of white space etc.
  *
  * @author Michael Couck
  * @version 01.00
- * @since 12.07.09
+ * @since 12-07-2009
  */
 public final class Toolkit {
 
@@ -28,6 +28,8 @@ public final class Toolkit {
      * The LOGGER.
      */
     private static Logger logger = LoggerFactory.getLogger(Toolkit.class);
+
+    private static final int seed = 131; // 31 131 1313 13131 131313 etc..
 
     /**
      * Simple, fast hash function to generate quite unique hashes from strings(i.e. toCharArray()).
@@ -37,7 +39,6 @@ public final class Toolkit {
      */
     public static Long hash(final String string) {
         // Must be prime of course
-        long seed = 131; // 31 131 1313 13131 131313 etc..
         long hash = 0;
         char[] chars = string.toCharArray();
         for (final char aChar : chars) {
@@ -54,10 +55,25 @@ public final class Toolkit {
      */
     public static Long hash(final Object... objects) {
         StringBuilder builder = new StringBuilder();
-        for (Object object : objects) {
+        for (final Object object : objects) {
             builder.append(object);
         }
         return Toolkit.hash(builder.toString());
+    }
+
+    public static short fastShortHash(final String... strings) {
+        int hash = 0;
+        for (final String string : strings) {
+            final char[] chars = string.toCharArray();
+            for (final char c : chars) {
+                hash = (hash * seed) + c;
+            }
+        }
+        short result = (short) hash;
+        if (result < 0) {
+            result *= -1;
+        }
+        return result;
     }
 
     /**
@@ -68,7 +84,7 @@ public final class Toolkit {
      */
     public static String slashToDot(final String name) {
         if (name == null) {
-            return name;
+            return null;
         }
         return name.replace('/', '.').replace('\\', '.');
     }
@@ -115,7 +131,7 @@ public final class Toolkit {
         StringBuilder buffer = new StringBuilder();
         char[] chars = string.toCharArray();
         int state = 0;
-        for (char c : chars) {
+        for (final char c : chars) {
             if (Character.isWhitespace(c)) {
                 if (state == 1) {
                     continue;
@@ -145,9 +161,9 @@ public final class Toolkit {
                 if (field != null) {
                     return field;
                 }
-            } catch (NoSuchFieldException e) {
+            } catch (final NoSuchFieldException e) {
                 e.printStackTrace();
-            } catch (SecurityException e) {
+            } catch (final SecurityException e) {
                 throw new RuntimeException(e);
             }
             targetClass = targetClass.getSuperclass();
@@ -164,7 +180,7 @@ public final class Toolkit {
      * @param <E>    the type to return
      * @return the value of the field if there is such a field or null if there isn't ir if anything goes wrong
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "UnusedParameters"})
     public static <E> E getValue(final Class<E> klass, final Object object, final String name) {
         if (object == null) {
             return null;
@@ -472,12 +488,13 @@ public final class Toolkit {
             return (T[]) new Object[]{t};
         }
         String[] fields = unique.fields();
-        List<T> values = new ArrayList<T>();
+        List<T> values = new ArrayList<>();
         for (String field : fields) {
             Object value = Toolkit.getValue(Object.class, t, field);
             T[] uniqueValues = (T[]) getUniqueValues(value);
             Collections.addAll(values, uniqueValues);
         }
+        //noinspection SuspiciousToArrayCall
         return (T[]) values.toArray(new Object[values.size()]);
     }
 
@@ -576,7 +593,7 @@ public final class Toolkit {
         // startIdx and idxOld delimit various chunks of aInput; these
         // chunks always end where aOldPattern begins
         int startIdx = 0;
-        int idxOld = 0;
+        int idxOld;
         while ((idxOld = aInput.indexOf(aOldPattern, startIdx)) >= 0) {
             // grab a part of aInput which does not include aOldPattern
             result.append(aInput.substring(startIdx, idxOld));

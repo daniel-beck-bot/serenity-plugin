@@ -108,7 +108,11 @@ public class DataBaseRamTest extends ATest {
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
         // 7873017250689681547, 437917821655607927
-        Line line = (Line) dataBase.find(Line.class, 7873017250689681547l);
+        List<Line> lines = dataBase.find(Line.class);
+        for (final Line line : lines) {
+            System.out.println(line.getId());
+        }
+        Line line = dataBase.find(Line.class, 7873017250689681547l);
         assertNotNull(line);
     }
 

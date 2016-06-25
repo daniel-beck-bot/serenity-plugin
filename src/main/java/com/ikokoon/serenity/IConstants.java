@@ -159,8 +159,10 @@ public interface IConstants {
     String REPORT = "report";
     String LISTENING = "listening";
 
-    int PORT = 50005;
-    int DATABASE_PORT = 8008;
+    int LISTENER_PORT = 50005;
+    int MULTICAST_PORT = 50006;
+    int SERVER_PORT = 50007;
+    int DATABASE_PORT = 50008;
 
     String STYLE_SHEET = "profiler-report-style.css";
     String METHOD_SERIES = "greatestAverageTimePerMethod.html";

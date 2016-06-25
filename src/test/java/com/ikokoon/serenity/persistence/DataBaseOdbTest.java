@@ -7,6 +7,7 @@ import com.ikokoon.serenity.model.Package;
 import com.ikokoon.toolkit.Toolkit;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -40,16 +41,15 @@ public class DataBaseOdbTest extends ATest {
     public void persist() {
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
-        pakkage = (Package) dataBase.find(Package.class, pakkage.getId());
+        pakkage = dataBase.find(Package.class, pakkage.getId());
         assertNotNull(pakkage);
 
         Long classId = ((Class) pakkage.getChildren().get(0)).getId();
-        Class klass = (Class) dataBase.find(Class.class, classId);
+        Class klass = dataBase.find(Class.class, classId);
         assertNotNull(klass);
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void findId() {
         DataBaseToolkit.dump(dataBase, new DataBaseToolkit.ICriteria() {
             public boolean satisfied(Composite<?, ?> composite) {
@@ -59,38 +59,37 @@ public class DataBaseOdbTest extends ATest {
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
         // 7873017250689681547, 437917821655607927
-        Line line = (Line) dataBase.find(Line.class, 7873017250689681547l);
+        Line line = dataBase.find(Line.class, 7873017250689681547l);
         assertNotNull(line);
     }
 
     @Test
-    @SuppressWarnings("rawtypes")
     public void findParameters() {
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
 
-        List<Object> parameters = new ArrayList<Object>();
+        List<Object> parameters = new ArrayList<>();
         parameters.add(packageName);
-        pakkage = (Package) dataBase.find(Package.class, parameters);
+        pakkage = dataBase.find(Package.class, parameters);
         assertNotNull(pakkage);
 
         parameters.clear();
         parameters.add(className);
-        Class klass = (Class) dataBase.find(Class.class, parameters);
+        Class klass = dataBase.find(Class.class, parameters);
         assertNotNull(klass);
 
         parameters.clear();
         parameters.add(klass.getName());
         parameters.add(methodName);
         parameters.add(methodDescription);
-        Method method = (Method) dataBase.find(Method.class, parameters);
+        Method method = dataBase.find(Method.class, parameters);
         assertNotNull(method);
 
         parameters.clear();
         parameters.add(klass.getName());
         parameters.add(method.getName());
         parameters.add(lineNumber);
-        Line line = (Line) dataBase.find(Line.class, parameters);
+        Line line = dataBase.find(Line.class, parameters);
         assertNotNull(line);
     }
 
@@ -101,10 +100,10 @@ public class DataBaseOdbTest extends ATest {
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
         Class klass = (Class) pakkage.getChildren().iterator().next();
-        klass = (Class) dataBase.find(Class.class, klass.getId());
+        klass = dataBase.find(Class.class, klass.getId());
         assertNotNull(klass);
         dataBase.remove(Class.class, klass.getId());
-        klass = (Class) dataBase.find(Class.class, klass.getId());
+        klass = dataBase.find(Class.class, klass.getId());
         assertNull(klass);
     }
 
@@ -113,7 +112,7 @@ public class DataBaseOdbTest extends ATest {
     public void find() {
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("name", pakkage.getName());
         List<Class> classes = dataBase.find(Class.class, parameters);
         assertEquals(1, classes.size());
@@ -134,8 +133,9 @@ public class DataBaseOdbTest extends ATest {
         assertEquals(1, classes.size());
     }
 
-    // @Test
-    @SuppressWarnings("rawtypes")
+    @Test
+    @Ignore
+    @SuppressWarnings({"UnusedAssignment"})
     public void memoryUsage() {
         long million = 1000000;
         long freeMemoryStart = Runtime.getRuntime().freeMemory() / million;

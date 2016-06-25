@@ -29,7 +29,7 @@ import java.util.*;
  *
  * @author Michael Couck
  * @version 01.00
- * @since 12.07.09
+ * @since 12-07-2009
  */
 public final class Collector implements IConstants {
 
@@ -123,6 +123,11 @@ public final class Collector implements IConstants {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         for (int i = 0; i < stackTraceElements.length; i++) {
             StackTraceElement stackTraceElement = stackTraceElements[i];
+
+            stackTraceElement.getClassName();
+            stackTraceElement.getMethodName();
+            stackTraceElement.getLineNumber();
+
             String className = stackTraceElement.getClassName();
             String methodName = stackTraceElement.getMethodName();
             int lineNumber = stackTraceElement.getLineNumber();
@@ -196,6 +201,10 @@ public final class Collector implements IConstants {
         method.setEndWait(System.nanoTime());
         long waitTime = (method.getEndWait() - method.getStartWait()) + method.getWaitTime();
         method.setWaitTime(waitTime);
+    }
+
+    public static Map<Long, Stack<CallMethod>> getCallStacks() {
+        return CALL_STACKS;
     }
 
     /**

@@ -2,7 +2,6 @@ package com.ikokoon.serenity.process;
 
 import com.ikokoon.serenity.Configuration;
 import com.ikokoon.serenity.IConstants;
-import com.ikokoon.serenity.Profiler;
 import com.ikokoon.serenity.model.Class;
 import com.ikokoon.serenity.model.Method;
 import com.ikokoon.serenity.model.Snapshot;
@@ -42,10 +41,12 @@ import java.util.concurrent.TimeUnit;
 public class Reporter extends AProcess {
 
     private IDataBase dataBase;
+    private Calculator calculator;
 
     public Reporter(IProcess parent, IDataBase dataBase) {
         super(parent);
         this.dataBase = dataBase;
+        this.calculator = new Calculator();
     }
 
     public void execute() {
@@ -110,8 +111,8 @@ public class Reporter extends AProcess {
     protected String methodSeries(final IDataBase dataBase) {
         Comparator<Method> comparator = new Comparator<Method>() {
             public int compare(Method o1, Method o2) {
-                Double o1Average = Profiler.averageMethodTime(o1);
-                Double o2Average = Profiler.averageMethodTime(o2);
+                Double o1Average = calculator.averageMethodTime(o1);
+                Double o2Average = calculator.averageMethodTime(o2);
                 // We want a descending table, i.e. the most expensive at the top
                 return o2Average.compareTo(o1Average);
             }
@@ -131,23 +132,23 @@ public class Reporter extends AProcess {
             Element rowElement = addElement(tableElement, "tr", null);
             addElement(rowElement, "td", className);
             addElement(rowElement, "td", methodName);
-            addElement(rowElement, "td", Double.toString(Profiler.averageMethodTime(method)));
-            addElement(rowElement, "td", Double.toString(Profiler.averageMethodNetTime(method)));
-            addElement(rowElement, "td", Double.toString(Profiler.totalMethodTime(method)));
-            addElement(rowElement, "td", Double.toString(Profiler.totalNetMethodTime(method)));
+            addElement(rowElement, "td", Double.toString(calculator.averageMethodTime(method)));
+            addElement(rowElement, "td", Double.toString(calculator.averageMethodNetTime(method)));
+            addElement(rowElement, "td", Double.toString(calculator.totalMethodTime(method)));
+            addElement(rowElement, "td", Double.toString(calculator.totalNetMethodTime(method)));
             addElement(rowElement, "td", Integer.toString(method.getInvocations()));
 
             Element dataElement = addElement(rowElement, "td", null);
             Element imageElement = addElement(dataElement, "img", null);
             // Add the method series graph for the average and total time for the method
-            List<Double> methodSeries = Profiler.methodSeries(method);
+            List<Double> methodSeries = calculator.methodSeries(method);
             String url = buildGraph(IConstants.METHOD_SERIES, method, methodSeries);
             addAttributes(imageElement, new String[]{"src"}, new String[]{url});
 
             dataElement = addElement(rowElement, "td", null);
             imageElement = addElement(dataElement, "img", null);
             // Add the method change graph, i.e. the change in the average time for the method
-            List<Double> methodChangeSeries = Profiler.methodChangeSeries(method);
+            List<Double> methodChangeSeries = calculator.methodChangeSeries(method);
             url = buildGraph(IConstants.METHOD_CHANGE_SERIES, method, methodChangeSeries);
             addAttributes(imageElement, new String[]{"src"}, new String[]{url});
         }
