@@ -10,15 +10,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * TODO - add the interesting methods to the collection of the complexity. Do we need to add try catch? And what about multiple catch? One for each
- * potential exception thrown? No?
- * <p>
- * This class just visits the byte code in the classes and collects the complexity metrics for the class. Complexity is calculated by adding one every
- * time there is a jump instruction.
+ * TODO - add the interesting methods to the collection of the complexity.
+ * Do we need to add try catch? And what about multiple catch? One for each potential
+ * exception thrown? No?
+ *
+ * This class just visits the byte code in the classes and collects the complexity metrics for the class.
+ * Complexity is calculated by adding one every time there is a jump instruction.
  *
  * @author Michael Couck
  * @version 01.00
- * @since 12.07.09
+ * @since 12-07-2009
  */
 public class ComplexityMethodAdapter extends MethodVisitor {
 
@@ -42,10 +43,10 @@ public class ComplexityMethodAdapter extends MethodVisitor {
 
     /**
      * The complexity counter, start with one and increment for each jump instruction/decision point. This will give the approximate value of the
-     * McCabe method:<br>
-     * <p>
+     * McCabe method:
+     *
      * M = E − N + 2P where
-     * <p>
+     *
      * M = cyclomatic complexity <br>
      * E = the number of edges of the graph<br>
      * N = the number of nodes of the graph<br>
@@ -63,20 +64,23 @@ public class ComplexityMethodAdapter extends MethodVisitor {
      * @param methodName        the name of the method that will be collected for complexity
      * @param methodDescription the description of the method, i.e. the byte code signature
      */
-    public ComplexityMethodAdapter(MethodVisitor methodVisitor, @SuppressWarnings("UnusedParameters") Integer access, String className, String methodName, String methodDescription) {
+    @SuppressWarnings("UnusedParameters")
+    public ComplexityMethodAdapter(
+            final MethodVisitor methodVisitor,
+            final Integer access,
+            final String className,
+            final String methodName,
+            final String methodDescription) {
         super(Opcodes.ASM5, methodVisitor);
         this.className = Toolkit.slashToDot(className);
         this.methodName = methodName;
         this.methodDescription = methodDescription;
-        if (logger.isDebugEnabled()) {
-            logger.debug("Class name : " + className + ", name : " + methodName + ", desc : " + methodDescription);
-        }
     }
 
     /**
      * {@inheritDoc}
      */
-    public void visitLineNumber(int lineNumber, Label label) {
+    public void visitLineNumber(final int lineNumber, final Label label) {
         if (logger.isDebugEnabled()) {
             logger.debug("visitLineNumber : " + lineNumber + ", " + label + ", " + label.getOffset() + ", " + className + ", " + methodName);
         }
@@ -86,7 +90,7 @@ public class ComplexityMethodAdapter extends MethodVisitor {
     /**
      * {@inheritDoc}
      */
-    public void visitJumpInsn(int opcode, Label paramLabel) {
+    public void visitJumpInsn(final int opcode, final Label paramLabel) {
         if (logger.isDebugEnabled()) {
             logger.debug("visitJumpInsn:" + opcode);
         }
@@ -108,8 +112,7 @@ public class ComplexityMethodAdapter extends MethodVisitor {
     /**
      * {@inheritDoc}
      */
-    public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
-        logger.debug("visitTryCatchBlock : " + className + ", " + methodName);
+    public void visitTryCatchBlock(final Label start, final Label end, final Label handler, final String type) {
         complexityCounter++;
         this.mv.visitTryCatchBlock(start, end, handler, type);
     }
@@ -117,8 +120,7 @@ public class ComplexityMethodAdapter extends MethodVisitor {
     /**
      * {@inheritDoc}
      */
-    public void visitLookupSwitchInsn(Label dflt, int keys[], Label labels[]) {
-        logger.debug("visitlookupSwitchInst : " + className + ", " + methodName);
+    public void visitLookupSwitchInsn(final Label dflt, final int keys[], final Label labels[]) {
         complexityCounter++;
         this.mv.visitLookupSwitchInsn(dflt, keys, labels);
     }
@@ -126,8 +128,7 @@ public class ComplexityMethodAdapter extends MethodVisitor {
     /**
      * {@inheritDoc}
      */
-    public void visitTableSwitchInsn(int min, int max, Label dflt, Label labels[]) {
-        logger.debug("visitTableSwitchInst : " + className + ", " + methodName);
+    public void visitTableSwitchInsn(final int min, final int max, final Label dflt, final Label labels[]) {
         complexityCounter++;
         this.mv.visitTableSwitchInsn(min, max, dflt, labels);
     }
@@ -135,8 +136,7 @@ public class ComplexityMethodAdapter extends MethodVisitor {
     /**
      * {@inheritDoc}
      */
-    public void visitInsn(int opcode) {
-        logger.debug("visitInst : " + className + ", " + methodName);
+    public void visitInsn(final int opcode) {
         // I could be an ATHROW. Do we count as a jump instruction?
         this.mv.visitInsn(opcode);
     }

@@ -1,4 +1,7 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,7 +15,8 @@
     <version>1.2-SNAPSHOT</version>
     <packaging>hpi</packaging>
     <name>Jenkins Serenity plugin</name>
-    <description>Code metrics and coverage plugin for Jenkins, dynamic instrumentation, and soon continuous profiling!</description>
+    <description>Code metrics and coverage plugin for Jenkins, dynamic instrumentation, and soon continuous profiling!
+    </description>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Serenity+Plugin</url>
 
     <scm>
@@ -50,37 +54,13 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.3</version>
-                <executions>
-                    <execution>
-                        <id>copy.hpi.task</id>
-                        <phase>package</phase>
-                        <configuration>
-                            <tasks verbose="true">
-                                <property name="temp" value="target/temp" />
-                                <property name="serenity.jar" value="target/serenity.jar" />
-                                <property name="manifest" value="src/main/resources/META-INF/MANIFEST.MF" />
-
-                                <echo message="Unpacking and repacking serenity.jar with the agent manifest" />
-                                <!--suppress MavenModelInspection -->
-                                <unjar src="${serenity.jar}" dest="${temp}" overwrite="true" />
-                                <!--suppress MavenModelInspection -->
-                                <jar destfile="${serenity.jar}" basedir="${temp}" manifest="${manifest}" />
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <forkMode>once</forkMode>
                     <argLine>-Xms512m -Xmx1024m -noverify</argLine>
+                    <excludes>
+                        <exclude>InjectedTest.java</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -105,13 +85,12 @@
                         </goals>
                         <configuration combine.self="override">
                             <failOnError>false</failOnError>
-                            <!--<additionalparam>-Xdoclint:none</additionalparam>-->
+                            <additionalparam>-Xdoclint:none</additionalparam>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
-            <!--<plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.3.1</version>
@@ -119,16 +98,34 @@
                     <verbose>true</verbose>
                     <archive>
                         <index>true</index>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>${main-class}</mainClass>
-                            <preMainClass>${pre-main-class}</preMainClass>
-                        </manifest>
+                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
-            </plugin>-->
-
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.3</version>
+                <executions>
+                    <execution>
+                        <id>package-serenity-zip</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <tasks verbose="true">
+                                <delete dir="serenity"/>
+                                <mkdir dir="serenity"/>
+                                <copy todir="serenity" file="target/serenity.jar" overwrite="true" failonerror="true"/>
+                                <copy todir="serenity" file="docs/readme.txt" overwrite="true" failonerror="true"/>
+                                <copydir dest="serenity/lib" src="lib"/>
+                                <zip destfile="serenity.zip" basedir="serenity"/>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
@@ -141,9 +138,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>de.java2html</groupId>
+            <groupId>java2html</groupId>
             <artifactId>java2html</artifactId>
-            <version>5.0</version>
+            <version>5.0.0</version>
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
@@ -159,17 +156,12 @@
             <version>5.0.3</version>
             <scope>compile</scope>
         </dependency>
+
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>1.10.8</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.openjdk.jmh</groupId>
-            <artifactId>jmh-core</artifactId>
-            <version>1.5.1</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 

@@ -4,64 +4,69 @@ import java.io.Serializable;
 
 /**
  * @author Michael Couck
- * @since 12.08.09
  * @version 01.00
+ * @since 12.08.09
  */
-@Unique(fields = { Composite.CLASS_NAME, Composite.METHOD_NAME, Composite.NUMBER })
+@SuppressWarnings("unused")
+@Unique(fields = {Composite.CLASS_NAME, Composite.METHOD_NAME, Composite.NUMBER})
 public class Line<E, F> extends Composite<Class<?, ?>, Object> implements Comparable<Line<?, ?>>, Serializable {
 
-	private String className;
-	private String methodName;
-	private double number;
-	private double counter;
+    private String className;
+    private String methodName;
+    private int number;
+    private int counter;
 
-	public String getMethodName() {
-		return methodName;
-	}
+    public String getMethodName() {
+        return methodName;
+    }
 
-	public void setMethodName(String methodName) {
-		this.methodName = methodName;
-	}
+    public void setMethodName(final String methodName) {
+        this.methodName = methodName;
+    }
 
-	public String getClassName() {
-		return className;
-	}
+    public String getClassName() {
+        return className;
+    }
 
-	public void setClassName(String className) {
-		this.className = className;
-	}
+    public void setClassName(final String className) {
+        this.className = className;
+    }
 
-	public double getNumber() {
-		return number;
-	}
+    public int getNumber() {
+        return number;
+    }
 
-	public void setNumber(double number) {
-		this.number = number;
-	}
+    public void setNumber(final int number) {
+        this.number = number;
+    }
 
-	public double getCounter() {
-		return counter;
-	}
+    public int getCounter() {
+        return counter;
+    }
 
-	public void setCounter(double counter) {
-		this.counter = counter;
-	}
+    public void setCounter(final int counter) {
+        this.counter = counter;
+    }
 
-	public void increment() {
-		this.counter++;
-	}
+    public void increment() {
+        this.counter++;
+    }
 
-	public String toString() {
-		return "Id : " + getId() + ", class name : " + className + ", method name : " + methodName + ", number : " + number + ", counter : "
-				+ counter;
-	}
+    public String toString() {
+        return "Id : " + getId() + ", class name : " + className + ", method name : " + methodName + ", number : " + number + ", counter : "
+                + counter;
+    }
 
-	public int compareTo(Line<?, ?> o) {
-		int comparison = 0;
-		if (this.getId() != null && o.getId() != null) {
-			comparison = this.getId().compareTo(o.getId());
-		}
-		return comparison;
-	}
+    @SuppressWarnings("NullableProblems")
+    public int compareTo(final Line<?, ?> o) {
+		if (o == null) {
+            return -1;
+        }
+        int comparison = 0;
+        if (this.getId() != null && o.getId() != null) {
+            comparison = this.getId().compareTo(o.getId());
+        }
+        return comparison;
+    }
 
 }

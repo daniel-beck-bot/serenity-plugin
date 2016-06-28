@@ -1,3 +1,3 @@
 #!/bin/sh
 #generate-resources
-mvn install -DskipTests=true -DskipITs=true
+mvn clean install -DskipTests=true -DskipITs=true

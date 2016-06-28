@@ -1,17 +1,11 @@
 package com.ikokoon.serenity;
 
-import com.ikokoon.serenity.model.Method;
 import com.ikokoon.serenity.persistence.IDataBase;
-import com.ikokoon.toolkit.Thread;
-import com.ikokoon.toolkit.Toolkit;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.net.*;
-import java.util.Date;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 /**
  * For the profiler to access the server, i.e. get multicast packets from it, and eventually post the data to the
@@ -85,40 +79,6 @@ public class Profiler {
                 }
             }
         });*/
-    }
-
-    private static Method[][] MATRIX = new Method[1025][];
-
-    static {
-        for (int i = 0; i < MATRIX.length; i++) {
-            MATRIX[i] = new Method[Short.MAX_VALUE];
-        }
-    }
-
-    @SuppressWarnings("UnusedParameters")
-    public static void collectStart(final String className, final String methodName, final String methodDescription) {
-        // long threadId = java.lang.Thread.currentThread().getId();
-        StackTraceElement[] stackTraceElements = java.lang.Thread.currentThread().getStackTrace();
-        Method[] methods = MATRIX[stackTraceElements.length];
-
-        int stackIndex = stackTraceElements.length - 2;
-        StackTraceElement parentStackTraceElement = stackTraceElements[stackIndex];
-        /*String parentClassName = parentStackTraceElement.getClassName();
-        String parentLineNumber = String.valueOf(parentStackTraceElement.getLineNumber());*/
-
-        short index = (short) Math.abs(Toolkit.fastShortHash(
-                parentStackTraceElement.getClassName(),
-                String.valueOf(parentStackTraceElement.getLineNumber()),
-                className,
-                methodName));
-        Method method = methods[index];
-        if (method == null) {
-            method = new Method();
-            methods[index] = method;
-            // Build/verify the thread's stack elements
-        }
-        method.setStartTime(System.nanoTime());
-        method.setInvocations(method.getInvocations() + 1);
     }
 
 }

@@ -5,7 +5,6 @@ import com.ikokoon.serenity.model.Method;
 import com.ikokoon.serenity.persistence.DataBaseOdb;
 import com.ikokoon.serenity.persistence.IDataBase;
 import com.ikokoon.serenity.process.Calculator;
-import com.ikokoon.toolkit.Executer;
 import org.apache.log4j.Logger;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -163,16 +162,6 @@ public class ProfilerTest extends ATest implements IConstants {
                 logger.debug("Total net method time : method : " + method.getName() + " - " + totalNetMethodTime);
             }
         }
-    }
-
-    @Test
-    public void collectStart() {
-        Executer.execute(new Executer.IPerform() {
-            @Override
-            public void execute() {
-                Profiler.collectStart(className, methodName, methodDescription);
-            }
-        }, "Profiler collect start : ", 10000);
     }
 
 }

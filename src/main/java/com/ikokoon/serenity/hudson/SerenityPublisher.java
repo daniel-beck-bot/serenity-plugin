@@ -42,7 +42,7 @@ import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getData
  * directories for each module in the case of Maven and Ant builds to the output directory for the build for display in the
  * Hudson front end plugin. As well as this the source that was found for the project is copied to the source directory where
  * the front end can access it.
- * <p/>
+ *
  * Once all the database files are copied to a location on the local machine then they are merged together and pruned.
  *
  * @author Michael Couck

@@ -50,7 +50,7 @@ public class CoverageSourceCodeTest extends ATest {
         for (final Method<Class, Line> method : methods) {
             List<Line> lines = method.getChildren();
             for (Line<?, ?> line : lines) {
-                line.setCounter(1.0);
+                line.setCounter(1);
             }
         }
     }

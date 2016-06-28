@@ -48,6 +48,7 @@ public class DataBaseOdb extends DataBase {
      * Constructor initialises a {@link DataBaseOdb} object.
      *
      * @param dataBaseFile the file to open the database with
+     * @param server       whether to start the database server of not
      */
     public DataBaseOdb(final String dataBaseFile, final boolean server) {
         synchronized (DataBaseOdb.class) {

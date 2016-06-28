@@ -162,22 +162,23 @@ public class CollectorTest extends ATest implements IConstants {
 
     @Test
     public void collectStart() {
-        Collector.collectStart(className, methodName, methodDescription);
-        Collector.collectStart(className, methodName, methodDescription);
-        for (final Map.Entry<Long, Stack<Collector.CallMethod>> entry : Collector.CALL_STACKS.entrySet()) {
-            Stack<Collector.CallMethod> callStack = entry.getValue();
-            for (Collector.CallMethod callMethod : callStack) {
-                LOGGER.info(
-                        "Class name : " + callMethod.getClassName() +
-                                ", method name : " + callMethod.getName() +
-                                ", method description : " + callMethod.getDescription());
+        Executer.execute(new Executer.IPerform() {
+            @Override
+            public void execute() {
+                Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectStart", "don't care");
             }
-        }
+        }, "Collect start performance : ", 100000);
     }
 
     @Test
     public void collectEnd() {
-
+        Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectStart", "don't care");
+        Executer.execute(new Executer.IPerform() {
+            @Override
+            public void execute() {
+                Collector.collectEnd("com.ikokoon.serenity.CollectorTest", "collectStart", "don't care");
+            }
+        }, "Collect end performance : ", 1);
     }
 
 }

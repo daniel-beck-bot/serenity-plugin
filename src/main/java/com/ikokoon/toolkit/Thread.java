@@ -123,6 +123,7 @@ public final class Thread {
      *
      * @param futures the futures to wait for in seconds
      * @param seconds and the maximum amount of time to wait in seconds
+     * @param <T> the type of return object from the future
      */
     public static <T> void waitForFutures(final List<Future<T>> futures, final long seconds) {
         for (final Future<?> future : futures) {

@@ -7,14 +7,14 @@ import com.ikokoon.serenity.model.Class;
 import com.ikokoon.serenity.model.Package;
 import com.ikokoon.serenity.persistence.IDataBase;
 import com.ikokoon.toolkit.Toolkit;
-import org.apache.commons.beanutils.BeanUtilsBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Note to self: Make this class non static? Is this a better option? More OO? Better performance? Will it be easier to
@@ -33,26 +33,12 @@ import java.util.*;
  */
 public final class Collector implements IConstants {
 
-    static final BeanUtilsBean BEAN_UTILS_BEAN = BeanUtilsBean.getInstance();
+    private static Method[][] MATRIX = new Method[1025][];
 
-    static class CallMethod extends Method<Method, Method> {
-
-        CallMethod(final int depth, final int lineNumber, final Method<?, ?> method) {
-            this.depth = depth;
-            this.lineNumber = lineNumber;
-            setProperties(method);
+    static {
+        for (int i = 0; i < MATRIX.length; i++) {
+            MATRIX[i] = new Method[Short.MAX_VALUE];
         }
-
-        final void setProperties(final Method method) {
-            try {
-                BEAN_UTILS_BEAN.copyProperties(this, method);
-            } catch (final IllegalAccessException | InvocationTargetException e) {
-                LOGGER.error("Exception copying properties from method to call method entity : ", e);
-            }
-        }
-
-        int depth;
-        int lineNumber;
     }
 
     /**
@@ -63,11 +49,6 @@ public final class Collector implements IConstants {
      * The database/persistence object.
      */
     private static IDataBase DATABASE;
-
-    /**
-     * Bla...
-     */
-    static final Map<Long, Stack<CallMethod>> CALL_STACKS = new HashMap<>();
 
     /** These are the profiler methods. */
 
@@ -84,7 +65,9 @@ public final class Collector implements IConstants {
      * This class is called by the byte code injection to increment the allocations of classes on the heap, i.e. when their
      * constructors are called.
      *
-     * @param className the name of the class being instantiated
+     * @param className         the name of the class being instantiated
+     * @param methodName        the name of the method to collect allocation from
+     * @param methodDescription the string description of the method, i.e. signature
      */
     @SuppressWarnings("unused")
     public static void collectAllocation(final String className, final String methodName, final String methodDescription) {
@@ -101,61 +84,55 @@ public final class Collector implements IConstants {
      * @param methodName        the name of the method in the class that is being executed
      * @param methodDescription the byte code description of the method
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings("UnusedParameters")
     public static void collectStart(final String className, final String methodName, final String methodDescription) {
-        long threadId = Thread.currentThread().getId();
-        Stack<CallMethod> callStack = CALL_STACKS.get(threadId);
-        // New thread? With no stack associated with it yet
-        if (callStack == null) {
-            callStack = new Stack<>();
-            CALL_STACKS.put(threadId, callStack);
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+        Method[] methods = MATRIX[stackTraceElements.length];
+
+        short index = Toolkit.fastShortHash(className, methodName, methodDescription);
+        Method method = methods[index];
+        if (method == null) {
+            collectStack();
+
+            StackTraceElement stackTraceElement = stackTraceElements[2];
+            method = getMethod(className, methodName, methodDescription);
+            methods[index] = method;
+            LOGGER.info("Method index at start : " + index + ", " + className + ":" + methodName + ":" + stackTraceElement.getLineNumber() + ", " +
+                    stackTraceElement.getClassName() + ", " + stackTraceElement.getMethodName() + ", " + stackTraceElement.getLineNumber());
         }
-        // Check that the stack has all the methods on it from the stack trace array, and
-        // returns the depth of the stack according to the JVM/thread that we are collecting for
-        int depth = collectStack(callStack);
-        // The last method on the stack is the one we are collecting for now
-        CallMethod callMethod = callStack.get(depth);
-        callMethod.setStartTime(System.nanoTime());
-        callMethod.setInvocations(callMethod.getInvocations() + 1);
+        method.setStartTime(System.nanoTime());
+        method.setInvocations(method.getInvocations() + 1);
     }
 
-    static int collectStack(final Stack<CallMethod> callStack) {
+    static void collectStack() {
+        LOGGER.info("Collecting stack : ");
+        Method<?, ?> method;
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        for (int i = 0; i < stackTraceElements.length; i++) {
+        int i = stackTraceElements.length - 1;
+        do {
+            Method[] methods = MATRIX[i];
             StackTraceElement stackTraceElement = stackTraceElements[i];
+            String stackTraceElementClassName = stackTraceElement.getClassName();
+            String stackTraceElementMethodName = stackTraceElement.getMethodName();
 
-            stackTraceElement.getClassName();
-            stackTraceElement.getMethodName();
-            stackTraceElement.getLineNumber();
+            Line<?, ?> line = getLine(stackTraceElementClassName, stackTraceElementMethodName, stackTraceElement.getLineNumber());
+            // TODO: The parent must be guaranteed not to be null
+            Method<?, ?> lineMethod = (Method<?, ?>) line.getParent();
 
-            String className = stackTraceElement.getClassName();
-            String methodName = stackTraceElement.getMethodName();
-            int lineNumber = stackTraceElement.getLineNumber();
-            // If we don't have the method on the stack the push it to the stack
-            if (callStack.size() <= i) {
-                Method<?, ?> method = getMethod(className, methodName, String.valueOf(lineNumber));
-                callStack.push(new CallMethod(i, lineNumber, method));
-            } else {
-                CallMethod callMethod = callStack.get(i);
-                // Is this the correct method for this stack
-                if (!callMethod.getClassName().equals(className) || callMethod.lineNumber != lineNumber) {
-                    // Found a different method on the stack, replace it with the current stack method
-                    // At this point we can look at the children of the method to see if there is a method for the corresponding stack element
-                    Method<?, ?> method = getMethod(className, methodName, String.valueOf(lineNumber));
-                    // This needs to be optimized somehow, retaining the data structure, and only
-                    // replacing the methods on the stack by using the ordinal values of the depth that
-                    // the method is at in the stack at this time, i.e. don't create new objects, just
-                    // replace them
-                    callMethod.setProperties(method);
-                }
+            // If we don't have the method in the array the push it to the array
+            short index = Toolkit.fastShortHash(stackTraceElementClassName, stackTraceElementMethodName, lineMethod.getDescription());
+            method = methods[index];
+            if (method == null) {
+                method = getMethod(stackTraceElementClassName, stackTraceElementMethodName, lineMethod.getDescription());
+                methods[index] = method;
             }
-        }
-        return stackTraceElements.length - 1;
+            LOGGER.info("        : " + method.getClassName() + ":" + method.getName());
+        } while (--i >= 0);
     }
 
     /**
      * This method is called by the byte code injection at the end of a method, i.e. when a thread returns from a method.
-     * This can happen in a return, or when an exception is thrown.
+     * This can happen in a return, or when an exception is thrown. There may be several exits from a method of course.
      *
      * @param className         the name of the class where the thread is entering the method
      * @param methodName        the name of the method in the class that is being executed
@@ -163,16 +140,25 @@ public final class Collector implements IConstants {
      */
     @SuppressWarnings("unused")
     public static void collectEnd(final String className, final String methodName, final String methodDescription) {
-        long threadId = Thread.currentThread().getId();
-        Stack<CallMethod> callStack = CALL_STACKS.get(threadId);
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        CallMethod callMethod = callStack.get(stackTraceElements.length - 1);
-        callMethod.setEndTime(System.nanoTime());
+        Method[] methods = MATRIX[stackTraceElements.length];
 
-        long executionTime = callMethod.getEndTime() - callMethod.getStartTime();
-        long totalTime = callMethod.getTotalTime() + executionTime;
+        StackTraceElement stackTraceElement = stackTraceElements[2];
+        String lineNumber = String.valueOf(stackTraceElement.getLineNumber());
 
-        callMethod.setTotalTime(totalTime);
+        short index = Toolkit.fastShortHash(className, methodName, lineNumber);
+
+        LOGGER.info("Method index at end : " + index + ", " + className + ":" + methodName + ":" + lineNumber + ", " +
+                stackTraceElement.getClassName() + ", " + stackTraceElement.getMethodName() + ", " + stackTraceElement.getLineNumber());
+
+        Method method = methods[index];
+
+        method.setEndTime(System.nanoTime());
+
+        long executionTime = method.getEndTime() - method.getStartTime();
+        long totalTime = method.getTotalTime() + executionTime;
+
+        method.setTotalTime(totalTime);
     }
 
     /**
@@ -201,10 +187,6 @@ public final class Collector implements IConstants {
         method.setEndWait(System.nanoTime());
         long waitTime = (method.getEndWait() - method.getStartWait()) + method.getWaitTime();
         method.setWaitTime(waitTime);
-    }
-
-    public static Map<Long, Stack<CallMethod>> getCallStacks() {
-        return CALL_STACKS;
     }
 
     /**
@@ -477,23 +459,35 @@ public final class Collector implements IConstants {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected static Line<?, ?> getLine(final String className, final String methodName, final String methodDescription,
-                                        final double lineNumber) {
-        long id = Toolkit.hash(className, methodName, lineNumber);
-        Line line = DATABASE.find(Line.class, id);
+    protected static Line<?, ?> getLine(final String className,
+                                        final String methodName,
+                                        final String methodDescription,
+                                        final int lineNumber) {
+        Line line = getLine(className, methodName, lineNumber);
 
+        Method method = getMethod(className, methodName, methodDescription);
+        Collection<Composite> lines = method.getChildren();
+        if (!line.getParent().equals(method) && !lines.contains(line)) {
+            line.setParent(method);
+            lines.add(line);
+            DATABASE.persist(line);
+        }
+
+        return line;
+    }
+
+    protected static Line<?, ?> getLine(final String className,
+                                        final String methodName,
+                                        final int lineNumber) {
+        long id = Toolkit.hash(className, methodName, lineNumber);
+        Line<?, ?> line = DATABASE.find(Line.class, id);
         if (line == null) {
             line = new Line();
 
             line.setNumber(lineNumber);
-            line.setCounter(0d);
+            line.setCounter(0);
             line.setClassName(className);
             line.setMethodName(methodName);
-
-            Method method = getMethod(className, methodName, methodDescription);
-            Collection<Composite> lines = method.getChildren();
-            line.setParent(method);
-            lines.add(line);
 
             DATABASE.persist(line);
         }

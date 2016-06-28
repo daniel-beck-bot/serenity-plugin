@@ -50,7 +50,7 @@ public abstract class ATest implements IConstants {
     protected String className = Target.class.getName();
     protected String methodName = "complexMethod";
     protected String methodDescription = Type.getMethodDescriptor(Type.VOID_TYPE, types);
-    protected double lineNumber = 70;
+    protected int lineNumber = 70;
     protected double complexity = 10d;
     protected int access = 1537;
 
@@ -169,7 +169,7 @@ public abstract class ATest implements IConstants {
     @SuppressWarnings({"unchecked", "rawtypes"})
     protected Line<?, ?> getLine(final Method method) {
         Line line = new Line();
-        line.setCounter(1d);
+        line.setCounter(1);
         line.setNumber(lineNumber);
         line.setParent(method);
         line.setMethodName(method.getName());
