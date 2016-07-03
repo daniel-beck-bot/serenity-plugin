@@ -157,13 +157,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>ikube</groupId>
-            <artifactId>ikube-com</artifactId>
-            <version>5.3.0</version>
-            <scope>compile</scope>
-        </dependency>
-
-        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
             <version>1.10.8</version>
@@ -187,16 +180,6 @@
         <repository>
             <id>repo.jenkins-ci.org-mirror</id>
             <url>http://mirrors.jenkins-ci.org/war/</url>
-        </repository>
-        <repository>
-            <id>ikube</id>
-            <url>http://ikube.be/artifactory/libs-release-local/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
         </repository>
     </repositories>
 

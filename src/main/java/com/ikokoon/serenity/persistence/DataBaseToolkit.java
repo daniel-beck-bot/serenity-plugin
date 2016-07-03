@@ -142,7 +142,7 @@ public final class DataBaseToolkit {
      * @param criteria the criteria to match if the data for the composite must be written to the output
      * @param message  the message to set
      */
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public static synchronized void dump(final IDataBase dataBase, final ICriteria criteria, final String message) {
         if (message != null) {
             LOGGER.warn(message);
