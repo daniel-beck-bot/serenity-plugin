@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author Michael Couck
  * @version 01.00
- * @since 09.12.09
+ * @since 09-12-2009
  */
 public final class DataBaseToolkit {
 
@@ -203,7 +203,7 @@ public final class DataBaseToolkit {
             for (final Object datum : data) {
                 builder.append(datum);
             }
-            LOGGER.warn(builder.toString());
+            System.out.println(builder.toString());
         }
     }
 

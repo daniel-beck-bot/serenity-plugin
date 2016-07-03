@@ -16,6 +16,14 @@ public class Line<E, F> extends Composite<Class<?, ?>, Object> implements Compar
     private int number;
     private int counter;
 
+    public Line() {}
+
+    public Line(final String className, final String methodName, final int number) {
+        this.className = className;
+        this.methodName = methodName;
+        this.number = number;
+    }
+
     public String getMethodName() {
         return methodName;
     }

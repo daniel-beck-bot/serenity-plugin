@@ -14,9 +14,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Map;
-import java.util.Stack;
-
 import static com.ikokoon.serenity.persistence.IDataBase.DataBaseManager.getDataBase;
 import static org.junit.Assert.*;
 
@@ -26,7 +23,7 @@ import static org.junit.Assert.*;
  *
  * @author Michael Couck
  * @version 01.00
- * @since 12.07.09
+ * @since 12-07-2009
  */
 public class CollectorTest extends ATest implements IConstants {
 
@@ -51,11 +48,6 @@ public class CollectorTest extends ATest implements IConstants {
     public void collectCoverageLineExecutor() {
         // After this we expect a package, a class, a method and a line element
         Collector.collectCoverage(className, methodName, methodDescription, (int) lineNumber);
-        DataBaseToolkit.dump(dataBase, new DataBaseToolkit.ICriteria() {
-            public boolean satisfied(Composite<?, ?> composite) {
-                return true;
-            }
-        }, this.getClass().getSimpleName() + " database dump");
 
         // We must test that the package is correct
         Long packageId = Toolkit.hash(packageName);
@@ -172,13 +164,18 @@ public class CollectorTest extends ATest implements IConstants {
 
     @Test
     public void collectEnd() {
-        Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectStart", "don't care");
         Executer.execute(new Executer.IPerform() {
             @Override
             public void execute() {
-                Collector.collectEnd("com.ikokoon.serenity.CollectorTest", "collectStart", "don't care");
+                Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectEnd", "don't care");
             }
-        }, "Collect end performance : ", 1);
+        }, "Create the stack : ", 1);
+        Executer.execute(new Executer.IPerform() {
+            @Override
+            public void execute() {
+                Collector.collectEnd("com.ikokoon.serenity.CollectorTest", "collectEnd", "don't care");
+            }
+        }, "Collect end performance : ", 100000);
     }
 
 }

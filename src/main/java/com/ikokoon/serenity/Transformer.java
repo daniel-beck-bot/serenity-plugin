@@ -105,7 +105,7 @@ public class Transformer implements ClassFileTransformer, IConstants {
             }
 
             // This is the underlying database that will persist the data to the file system
-            IDataBase odbDataBase = getDataBase(DataBaseOdb.class, IConstants.DATABASE_FILE_ODB, Boolean.TRUE, null);
+            IDataBase odbDataBase = getDataBase(DataBaseOdb.class, IConstants.DATABASE_FILE_ODB, Boolean.FALSE, null);
             // This is the ram database that will hold all the data in memory for better performance
             IDataBase ramDataBase = getDataBase(DataBaseRam.class, IConstants.DATABASE_FILE_RAM, Boolean.FALSE, odbDataBase);
             Collector.initialize(ramDataBase);

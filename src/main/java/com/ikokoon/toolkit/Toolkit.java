@@ -29,6 +29,7 @@ public final class Toolkit {
      */
     private static Logger logger = LoggerFactory.getLogger(Toolkit.class);
 
+    // Must be prime of course
     private static final int seed = 131; // 31 131 1313 13131 131313 etc..
 
     /**
@@ -38,7 +39,6 @@ public final class Toolkit {
      * @return the integer representation of the hash of the string characters, typically quite unique for strings less than 10 characters
      */
     public static Long hash(final String string) {
-        // Must be prime of course
         long hash = 0;
         char[] chars = string.toCharArray();
         for (final char aChar : chars) {

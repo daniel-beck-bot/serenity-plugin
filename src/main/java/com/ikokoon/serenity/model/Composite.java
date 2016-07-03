@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * @author Michael Couck
  * @version 01.00
- * @since 09.12.09
+ * @since 09-12-2009
  */
 public abstract class Composite<E, F> {
 

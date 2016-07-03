@@ -7,7 +7,6 @@ import com.ikokoon.serenity.model.Package;
 import com.ikokoon.toolkit.Toolkit;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -50,16 +49,11 @@ public class DataBaseOdbTest extends ATest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void findId() {
-        DataBaseToolkit.dump(dataBase, new DataBaseToolkit.ICriteria() {
-            public boolean satisfied(Composite<?, ?> composite) {
-                return true;
-            }
-        }, this.getClass().getSimpleName() + " database dump : ");
-        Package pakkage = getPackage();
+        Package<Project, Class> pakkage = (Package<Project, Class>) getPackage();
         dataBase.persist(pakkage);
-        // 7873017250689681547, 437917821655607927
-        Line line = dataBase.find(Line.class, 7873017250689681547l);
+        Line line = dataBase.find(Line.class, 2527758816159558051l);
         assertNotNull(line);
     }
 
@@ -131,45 +125,6 @@ public class DataBaseOdbTest extends ATest {
 
         classes = dataBase.find(Class.class, 0, 1);
         assertEquals(1, classes.size());
-    }
-
-    @Test
-    @Ignore
-    @SuppressWarnings({"UnusedAssignment"})
-    public void memoryUsage() {
-        long million = 1000000;
-        long freeMemoryStart = Runtime.getRuntime().freeMemory() / million;
-        LOGGER.info("Free memory start : " + freeMemoryStart);
-
-        IDataBase dataBase = getDataBase(DataBaseOdb.class, "./serenity/findbugs.serenity.odb", Boolean.FALSE, null);
-
-        long freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-        LOGGER.info("Free memory difference after initialise : " + (freeMemoryEnd - freeMemoryStart));
-
-        Package<?, ?> pakkage = dataBase.find(Package.class, Toolkit.hash("edu.umd.cs.findbugs"));
-        assertNotNull(pakkage);
-
-        freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-        LOGGER.info("Free memory difference after select one package : " + (freeMemoryEnd - freeMemoryStart));
-
-        pakkage = null;
-        Runtime.getRuntime().gc();
-
-        freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-        LOGGER.info("Free memory difference after null the package : " + (freeMemoryEnd - freeMemoryStart));
-
-        List<Package> packages = dataBase.find(Package.class);
-        assertTrue(packages.size() > 0);
-
-        freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-        LOGGER.info("Free memory difference after select all packages : " + (freeMemoryEnd - freeMemoryStart));
-
-        packages = null;
-        Runtime.getRuntime().gc();
-
-        freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-        LOGGER.info("Free memory difference after null all the packges : " + (freeMemoryEnd - freeMemoryStart));
-        LOGGER.info("Free memory end : " + freeMemoryEnd);
     }
 
 }

@@ -9,12 +9,12 @@ import com.ikokoon.serenity.persistence.IDataBase;
 import java.util.List;
 
 /**
- * This class removes the lines and the efferent and afferent from the model as we will not need them further and they form a very large part of the
- * model which hogs memory.
+ * This class removes the lines and the efferent and afferent from the model as we will not need them further
+ * and they form a very large part of the model which hogs memory.
  *
  * @author Michael Couck
  * @version 01.00
- * @since 10.01.10
+ * @since 10-01-2010
  */
 public class Pruner extends AProcess implements IConstants {
 

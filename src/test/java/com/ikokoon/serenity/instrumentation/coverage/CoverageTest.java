@@ -2,7 +2,7 @@ package com.ikokoon.serenity.instrumentation.coverage;
 
 import com.ikokoon.serenity.ATest;
 import com.ikokoon.serenity.instrumentation.VisitorFactory;
-import com.ikokoon.serenity.model.Line;
+import com.ikokoon.serenity.model.*;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -10,6 +10,7 @@ import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
+import java.lang.Class;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -71,10 +72,10 @@ public class CoverageTest extends ATest {
                 String.class, String.class, String.class, Integer.class, Integer.class);
         method.invoke(target, "", "", "", 0, 0);
         // Now verify that the Collector class was called from the added instructions
-        List<Object> parameters = new ArrayList<Object>();
+        List<Object> parameters = new ArrayList<>();
         parameters.add(className);
         parameters.add(methodName);
-        parameters.add(96d);
+        parameters.add(96);
         Line<?, ?> line = (Line) dataBase.find(Line.class, parameters);
         assertNotNull(line);
         assertTrue(line.getCounter() > 0);

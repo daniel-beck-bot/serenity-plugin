@@ -20,10 +20,10 @@ import java.util.List;
  * Note to self: Make this class non static? Is this a better option? More OO? Better performance? Will it be easier to
  * understand? In the case of distributing the collector class by putting it in the constant pool of the classes and then
  * calling the instance variable from inside the classes, will this be more difficult to understand?
- *
+ * <p/>
  * In this static class all the real collection logic is in one place and is called statically. The generation of the
  * instructions to call this class is simple and seemingly not much less performant than an instance variable.
- *
+ * <p/>
  * This class collects the data from the processing. It adds the metrics to the packages, classes, methods and lines and
  * persists the data in the database. This is the central collection class for the coverage and dependency functionality.
  *
@@ -33,7 +33,7 @@ import java.util.List;
  */
 public final class Collector implements IConstants {
 
-    private static Method[][] MATRIX = new Method[1025][];
+    static Method[][] MATRIX = new Method[1025][];
 
     static {
         for (int i = 0; i < MATRIX.length; i++) {
@@ -94,9 +94,9 @@ public final class Collector implements IConstants {
         if (method == null) {
             collectStack();
 
-            StackTraceElement stackTraceElement = stackTraceElements[2];
             method = getMethod(className, methodName, methodDescription);
             methods[index] = method;
+            StackTraceElement stackTraceElement = stackTraceElements[2];
             LOGGER.info("Method index at start : " + index + ", " + className + ":" + methodName + ":" + stackTraceElement.getLineNumber() + ", " +
                     stackTraceElement.getClassName() + ", " + stackTraceElement.getMethodName() + ", " + stackTraceElement.getLineNumber());
         }
@@ -114,20 +114,17 @@ public final class Collector implements IConstants {
             StackTraceElement stackTraceElement = stackTraceElements[i];
             String stackTraceElementClassName = stackTraceElement.getClassName();
             String stackTraceElementMethodName = stackTraceElement.getMethodName();
-
-            Line<?, ?> line = getLine(stackTraceElementClassName, stackTraceElementMethodName, stackTraceElement.getLineNumber());
-            // TODO: The parent must be guaranteed not to be null
-            Method<?, ?> lineMethod = (Method<?, ?>) line.getParent();
+            String lineNumber = String.valueOf(stackTraceElement.getLineNumber());
 
             // If we don't have the method in the array the push it to the array
-            short index = Toolkit.fastShortHash(stackTraceElementClassName, stackTraceElementMethodName, lineMethod.getDescription());
+            short index = Toolkit.fastShortHash(stackTraceElementClassName, stackTraceElementMethodName, lineNumber);
             method = methods[index];
             if (method == null) {
-                method = getMethod(stackTraceElementClassName, stackTraceElementMethodName, lineMethod.getDescription());
+                method = getMethod(stackTraceElementClassName, stackTraceElementMethodName, lineNumber);
                 methods[index] = method;
             }
             LOGGER.info("        : " + method.getClassName() + ":" + method.getName());
-        } while (--i >= 0);
+        } while (--i >= 1);
     }
 
     /**
@@ -143,15 +140,12 @@ public final class Collector implements IConstants {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         Method[] methods = MATRIX[stackTraceElements.length];
 
-        StackTraceElement stackTraceElement = stackTraceElements[2];
-        String lineNumber = String.valueOf(stackTraceElement.getLineNumber());
-
-        short index = Toolkit.fastShortHash(className, methodName, lineNumber);
-
-        LOGGER.info("Method index at end : " + index + ", " + className + ":" + methodName + ":" + lineNumber + ", " +
-                stackTraceElement.getClassName() + ", " + stackTraceElement.getMethodName() + ", " + stackTraceElement.getLineNumber());
+        short index = Toolkit.fastShortHash(className, methodName, methodDescription);
 
         Method method = methods[index];
+
+        /*LOGGER.info("Method index at end : " + index + ", " + className + ":" + methodName + ":" + lineNumber + ", " +
+                stackTraceElement.getClassName() + ", " + stackTraceElement.getMethodName() + ", " + stackTraceElement.getLineNumber());*/
 
         method.setEndTime(System.nanoTime());
 
@@ -419,11 +413,14 @@ public final class Collector implements IConstants {
             klass.setInterfaze(false);
 
             Package<Project<?, ?>, Class<?, ?>> pakkage = getPackage(className);
-            pakkage.getChildren().add(klass);
-            //noinspection unchecked
-            klass.setParent(pakkage);
-
-            klass = (Class<?, ?>) DATABASE.persist(klass);
+            try {
+                pakkage.getChildren().add(klass);
+                //noinspection unchecked
+                klass.setParent(pakkage);
+                klass = (Class<?, ?>) DATABASE.persist(klass);
+            } catch (final Exception e) {
+                e.printStackTrace();
+            }
         }
         //noinspection unchecked
         return klass;
@@ -459,28 +456,10 @@ public final class Collector implements IConstants {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    protected static Line<?, ?> getLine(final String className,
-                                        final String methodName,
-                                        final String methodDescription,
-                                        final int lineNumber) {
-        Line line = getLine(className, methodName, lineNumber);
-
-        Method method = getMethod(className, methodName, methodDescription);
-        Collection<Composite> lines = method.getChildren();
-        if (!line.getParent().equals(method) && !lines.contains(line)) {
-            line.setParent(method);
-            lines.add(line);
-            DATABASE.persist(line);
-        }
-
-        return line;
-    }
-
-    protected static Line<?, ?> getLine(final String className,
-                                        final String methodName,
-                                        final int lineNumber) {
+    protected static Line<?, ?> getLine(final String className, final String methodName, final String methodDescription, final int lineNumber) {
         long id = Toolkit.hash(className, methodName, lineNumber);
-        Line<?, ?> line = DATABASE.find(Line.class, id);
+        Line line = DATABASE.find(Line.class, id);
+
         if (line == null) {
             line = new Line();
 
@@ -488,6 +467,11 @@ public final class Collector implements IConstants {
             line.setCounter(0);
             line.setClassName(className);
             line.setMethodName(methodName);
+
+            Method method = getMethod(className, methodName, methodDescription);
+            Collection<Composite> lines = method.getChildren();
+            line.setParent(method);
+            lines.add(line);
 
             DATABASE.persist(line);
         }

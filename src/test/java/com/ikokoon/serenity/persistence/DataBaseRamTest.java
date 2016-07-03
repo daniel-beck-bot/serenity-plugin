@@ -93,26 +93,20 @@ public class DataBaseRamTest extends ATest {
         // T object
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
-        pakkage = (Package) dataBase.find(Package.class, pakkage.getId());
+        pakkage = dataBase.find(Package.class, pakkage.getId());
         assertNotNull(pakkage);
 
         Long classId = ((Class) pakkage.getChildren().get(0)).getId();
-        Class klass = (Class) dataBase.find(Class.class, classId);
+        Class klass = dataBase.find(Class.class, classId);
         assertNotNull(klass);
     }
 
     @Test
     @SuppressWarnings("rawtypes")
     public void findId() {
-        DataBaseToolkit.clear(dataBase);
         Package pakkage = getPackage();
         dataBase.persist(pakkage);
-        // 7873017250689681547, 437917821655607927
-        List<Line> lines = dataBase.find(Line.class);
-        for (final Line line : lines) {
-            System.out.println(line.getId());
-        }
-        Line line = dataBase.find(Line.class, 7873017250689681547l);
+        Line line = dataBase.find(Line.class, 2527758816159558051l);
         assertNotNull(line);
     }
 

@@ -5,112 +5,118 @@ import java.util.Date;
 
 /**
  * @author Michael Couck
- * @since 12.08.09
  * @version 01.00
+ * @since 12-08-2009
  */
-@Unique(fields = { Composite.NAME })
+@Unique(fields = {Composite.NAME})
 public class Project<E, F> extends Composite<Object, Package<?, ?>> implements Serializable {
 
-	private String name = this.getClass().getName();
-	private Date timestamp;
+    private String name = this.getClass().getName();
+    private Date timestamp;
 
-	private double coverage;
-	private double complexity;
-	private double abstractness;
-	private double stability;
-	private double distance;
+    private double coverage;
+    private double complexity;
+    private double abstractness;
+    private double stability;
+    private double distance;
 
-	private double lines;
-	private double methods;
-	private double classes;
-	private double packages;
+    private double lines;
+    private double methods;
+    private double classes;
+    private double packages;
 
-	public String getName() {
-		return name;
-	}
+    public Project() {}
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public Project(final String name) {
+        this.name = name;
+    }
 
-	public double getComplexity() {
-		return complexity;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setComplexity(double complex) {
-		this.complexity = complex;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public double getCoverage() {
-		return coverage;
-	}
+    public double getComplexity() {
+        return complexity;
+    }
 
-	public void setCoverage(double coverage) {
-		this.coverage = coverage;
-	}
+    public void setComplexity(double complex) {
+        this.complexity = complex;
+    }
 
-	public double getAbstractness() {
-		return abstractness;
-	}
+    public double getCoverage() {
+        return coverage;
+    }
 
-	public void setAbstractness(double abstrakt) {
-		this.abstractness = abstrakt;
-	}
+    public void setCoverage(double coverage) {
+        this.coverage = coverage;
+    }
 
-	public double getStability() {
-		return stability;
-	}
+    public double getAbstractness() {
+        return abstractness;
+    }
 
-	public void setStability(double stability) {
-		this.stability = stability;
-	}
+    public void setAbstractness(double abstrakt) {
+        this.abstractness = abstrakt;
+    }
 
-	public double getDistance() {
-		return distance;
-	}
+    public double getStability() {
+        return stability;
+    }
 
-	public void setDistance(double distance) {
-		this.distance = distance;
-	}
+    public void setStability(double stability) {
+        this.stability = stability;
+    }
 
-	public Date getTimestamp() {
-		return timestamp;
-	}
+    public double getDistance() {
+        return distance;
+    }
 
-	public void setTimestamp(Date timestamp) {
-		this.timestamp = timestamp;
-	}
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
 
-	public double getLines() {
-		return lines;
-	}
+    public Date getTimestamp() {
+        return timestamp;
+    }
 
-	public void setLines(double totalLines) {
-		this.lines = totalLines;
-	}
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
 
-	public double getMethods() {
-		return methods;
-	}
+    public double getLines() {
+        return lines;
+    }
 
-	public void setMethods(double totalMethods) {
-		this.methods = totalMethods;
-	}
+    public void setLines(double totalLines) {
+        this.lines = totalLines;
+    }
 
-	public double getClasses() {
-		return classes;
-	}
+    public double getMethods() {
+        return methods;
+    }
 
-	public void setClasses(double totalClasses) {
-		this.classes = totalClasses;
-	}
+    public void setMethods(double totalMethods) {
+        this.methods = totalMethods;
+    }
 
-	public double getPackages() {
-		return packages;
-	}
+    public double getClasses() {
+        return classes;
+    }
 
-	public void setPackages(double totalPackages) {
-		this.packages = totalPackages;
-	}
+    public void setClasses(double totalClasses) {
+        this.classes = totalClasses;
+    }
+
+    public double getPackages() {
+        return packages;
+    }
+
+    public void setPackages(double totalPackages) {
+        this.packages = totalPackages;
+    }
 
 }
