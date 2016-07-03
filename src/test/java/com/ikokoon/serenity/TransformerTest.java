@@ -6,6 +6,7 @@ import com.ikokoon.serenity.persistence.DataBaseToolkit;
 import com.ikokoon.target.Target;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.InputStream;
@@ -21,6 +22,7 @@ import static org.junit.Assert.*;
  * @version 01.00
  * @since 12.07.09
  */
+@Ignore
 public class TransformerTest extends ATest {
 
     private Configuration configuration;

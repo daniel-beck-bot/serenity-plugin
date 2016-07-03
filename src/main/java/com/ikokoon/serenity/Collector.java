@@ -20,10 +20,8 @@ import java.util.List;
  * Note to self: Make this class non static? Is this a better option? More OO? Better performance? Will it be easier to
  * understand? In the case of distributing the collector class by putting it in the constant pool of the classes and then
  * calling the instance variable from inside the classes, will this be more difficult to understand?
- * <p/>
  * In this static class all the real collection logic is in one place and is called statically. The generation of the
  * instructions to call this class is simple and seemingly not much less performant than an instance variable.
- * <p/>
  * This class collects the data from the processing. It adds the metrics to the packages, classes, methods and lines and
  * persists the data in the database. This is the central collection class for the coverage and dependency functionality.
  *
