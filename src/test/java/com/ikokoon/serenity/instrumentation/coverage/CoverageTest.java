@@ -5,6 +5,7 @@ import com.ikokoon.serenity.instrumentation.VisitorFactory;
 import com.ikokoon.serenity.model.Line;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -19,18 +20,19 @@ import java.util.List;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+@Ignore
 public class CoverageTest extends ATest {
 
     private ClassLoader classLoader;
 
     @Before
     public void before() {
-        classLoader = Thread.currentThread().getContextClassLoader();
+        // classLoader = Thread.currentThread().getContextClassLoader();
     }
 
     @After
     public void after() {
-        Thread.currentThread().setContextClassLoader(classLoader);
+        // Thread.currentThread().setContextClassLoader(classLoader);
     }
 
     @Test
