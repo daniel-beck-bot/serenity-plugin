@@ -6,7 +6,6 @@ import com.ikokoon.serenity.persistence.DataBaseToolkit;
 import com.ikokoon.target.Target;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.lang.instrument.Instrumentation;
@@ -21,7 +20,6 @@ import static org.junit.Assert.*;
  * @version 01.00
  * @since 12-07-2009
  */
-@Ignore
 public class TransformerTest extends ATest {
 
     private Configuration configuration;
@@ -31,14 +29,14 @@ public class TransformerTest extends ATest {
     @Before
     public void before() {
         // Call the pre-main to load stuff we need
-        // Transformer.premain(null, instrumentation);
-        // Transformer.removeShutdownHook();
-        // configuration = Configuration.getConfiguration();
+        Transformer.premain(null, instrumentation);
+        Transformer.removeShutdownHook();
+        configuration = Configuration.getConfiguration();
     }
 
     @After
     public void after() {
-        // DataBaseToolkit.clear(dataBase);
+        DataBaseToolkit.clear(dataBase);
     }
 
     @Test

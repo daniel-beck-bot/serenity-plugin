@@ -57,7 +57,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <forkMode>once</forkMode>
-                    <argLine>-Xms512m -Xmx1024m -noverify</argLine>
+                    <argLine>-Xms256m -Xmx512m -noverify</argLine>
                     <excludes>
                         <exclude>InjectedTest.java</exclude>
                     </excludes>
