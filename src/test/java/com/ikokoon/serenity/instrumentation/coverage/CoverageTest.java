@@ -2,7 +2,9 @@ package com.ikokoon.serenity.instrumentation.coverage;
 
 import com.ikokoon.serenity.ATest;
 import com.ikokoon.serenity.instrumentation.VisitorFactory;
-import com.ikokoon.serenity.model.*;
+import com.ikokoon.serenity.model.Line;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -10,7 +12,6 @@ import org.objectweb.asm.util.CheckClassAdapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
-import java.lang.Class;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +20,18 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class CoverageTest extends ATest {
+
+    private ClassLoader classLoader;
+
+    @Before
+    public void before() {
+        classLoader = Thread.currentThread().getContextClassLoader();
+    }
+
+    @After
+    public void after() {
+        Thread.currentThread().setContextClassLoader(classLoader);
+    }
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
