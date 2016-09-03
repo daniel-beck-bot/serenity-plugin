@@ -50,12 +50,12 @@
     </target>
 
     <target name="package">
-        <delete dir="serenity"/>
-        <mkdir dir="serenity"/>
-        <copy todir="serenity" file="${serenity.jar}" overwrite="true" failonerror="true"/>
-        <copy todir="serenity" file="${readme.txt}" overwrite="true" failonerror="true"/>
-        <copydir dest="serenity/lib" src="lib"/>
-        <zip destfile="serenity.zip" basedir="serenity"/>
+        <delete dir="target/serenity"/>
+        <mkdir dir="target/serenity"/>
+        <copy todir="target/serenity" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+        <copy todir="target/serenity" file="${readme.txt}" overwrite="true" failonerror="true"/>
+        <copydir dest="target/serenity/lib" src="lib"/>
+        <zip destfile="target/serenity.zip" basedir="target/serenity"/>
     </target>
 
 </project>
