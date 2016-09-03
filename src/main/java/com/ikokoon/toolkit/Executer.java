@@ -11,7 +11,7 @@ public class Executer {
         void execute();
     }
 
-    public static double execute(final IPerform perform, final String type, final double iterations) {
+    public static double execute(final IPerform perform, final String type, final long iterations) {
         double start = System.currentTimeMillis();
         for (int i = 0; i < iterations; i++) {
             perform.execute();

@@ -6,178 +6,136 @@ import java.util.List;
 
 /**
  * @author Michael Couck
- * @since 12.08.09
  * @version 01.00
+ * @since 12.08.09
  */
-@Unique(fields = { Composite.NAME })
-public class Class<E, F> extends Composite<Package, Method> implements Comparable<Class<?, ?>>, Serializable {
+@SuppressWarnings("unused")
+@Unique(fields = {Composite.NAME})
+public class Class<E, F> extends Stability<Package, Method> implements Comparable<Class<?, ?>>, Serializable {
 
-	private int access;
-	private String name;
-	private Class<Package, Method> outerClass;
-	private Method<Class, Line> outerMethod;
-	private List<Class<Package, Method>> innerClasses = new ArrayList<>();
+    private int access;
+    private String name;
+    private Class<Package, Method> outerClass;
+    private Method<Class, Line> outerMethod;
+    private List<Class<Package, Method>> innerClasses;
 
-	private double coverage;
-	private double complexity;
-	private double stability;
+    private double coverage;
+    private double complexity;
 
-	private double efference;
-	private double afference;
+    private boolean interfaze;
 
-	private boolean interfaze;
+    private double allocations;
 
-	private double allocations;
+    private List<Snapshot<?, ?>> snapshots;
 
-	private List<Efferent> efferent = new ArrayList<>();
-	private List<Afferent> afferent = new ArrayList<>();
+    private String source;
 
-	private List<Snapshot<?, ?>> snapshots = new ArrayList<>();
+    public String getName() {
+        return name;
+    }
 
-	private String source;
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public int getAccess() {
+        return access;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setAccess(int access) {
+        this.access = access;
+    }
 
-	public int getAccess() {
-		return access;
-	}
+    public Class<?, ?> getOuterClass() {
+        return outerClass;
+    }
 
-	public void setAccess(int access) {
-		this.access = access;
-	}
+    public void setOuterClass(Class<Package, Method> outerClass) {
+        this.outerClass = outerClass;
+    }
 
-	public Class<?, ?> getOuterClass() {
-		return outerClass;
-	}
+    public Method<?, ?> getOuterMethod() {
+        return outerMethod;
+    }
 
-	public void setOuterClass(Class<Package, Method> outerClass) {
-		this.outerClass = outerClass;
-	}
+    public void setOuterMethod(Method<Class, Line> outerMethod) {
+        this.outerMethod = outerMethod;
+    }
 
-	public Method<?, ?> getOuterMethod() {
-		return outerMethod;
-	}
+    public List<Class<Package, Method>> getInnerClasses() {
+        if (innerClasses == null) {
+            innerClasses = new ArrayList<>();
+        }
+        return innerClasses;
+    }
 
-	public void setOuterMethod(Method<Class, Line> outerMethod) {
-		this.outerMethod = outerMethod;
-	}
+    public void setInnerClasses(List<Class<Package, Method>> innerClasses) {
+        this.innerClasses = innerClasses;
+    }
 
-	public List<Class<Package, Method>> getInnerClasses() {
-		return innerClasses;
-	}
+    public double getComplexity() {
+        return complexity;
+    }
 
-	public void setInnerClasses(List<Class<Package, Method>> innerClasses) {
-		this.innerClasses = innerClasses;
-	}
+    public void setComplexity(double complexity) {
+        this.complexity = complexity;
+    }
 
-	public double getComplexity() {
-		return complexity;
-	}
+    public double getCoverage() {
+        return coverage;
+    }
 
-	public void setComplexity(double complexity) {
-		this.complexity = complexity;
-	}
+    public void setCoverage(double coverage) {
+        this.coverage = coverage;
+    }
 
-	public double getCoverage() {
-		return coverage;
-	}
+    public boolean getInterfaze() {
+        return interfaze;
+    }
 
-	public void setCoverage(double coverage) {
-		this.coverage = coverage;
-	}
+    public void setInterfaze(boolean interfaze) {
+        this.interfaze = interfaze;
+    }
 
-	public double getStability() {
-		return stability;
-	}
+    public double getAllocations() {
+        return allocations;
+    }
 
-	public void setStability(double stability) {
-		this.stability = stability;
-	}
+    public void setAllocations(double allocations) {
+        this.allocations = allocations;
+    }
 
-	public double getEfference() {
-		return efference;
-	}
+    public List<Snapshot<?, ?>> getSnapshots() {
+        return snapshots;
+    }
 
-	public void setEfference(double efferent) {
-		this.efference = efferent;
-	}
+    public void setSnapshots(List<Snapshot<?, ?>> snapshots) {
+        this.snapshots = snapshots;
+    }
 
-	public double getAfference() {
-		return afference;
-	}
+    public String getSource() {
+        return source;
+    }
 
-	public void setAfference(double afferent) {
-		this.afference = afferent;
-	}
+    public void setSource(String source) {
+        this.source = source;
+    }
 
-	public boolean getInterfaze() {
-		return interfaze;
-	}
+    public String toString() {
+        return getId() + ":" + name;
+    }
 
-	public void setInterfaze(boolean interfaze) {
-		this.interfaze = interfaze;
-	}
-
-	public double getAllocations() {
-		return allocations;
-	}
-
-	public void setAllocations(double allocations) {
-		this.allocations = allocations;
-	}
-
-	public List<Efferent> getEfferent() {
-		return efferent;
-	}
-
-	public void setEfferent(List<Efferent> efferent) {
-		this.efferent = efferent;
-	}
-
-	public List<Afferent> getAfferent() {
-		return afferent;
-	}
-
-	public void setAfferent(List<Afferent> afferent) {
-		this.afferent = afferent;
-	}
-
-	public List<Snapshot<?, ?>> getSnapshots() {
-		return snapshots;
-	}
-
-	public void setSnapshots(List<Snapshot<?, ?>> snapshots) {
-		this.snapshots = snapshots;
-	}
-
-	public String getSource() {
-		return source;
-	}
-
-	public void setSource(String source) {
-		this.source = source;
-	}
-
-	public String toString() {
-		return getId() + ":" + name;
-	}
-
-	public int compareTo(Class<?, ?> o) {
-		int comparison = 0;
-		if (this.getId() != null && o.getId() != null) {
-			comparison = this.getId().compareTo(o.getId());
-		} else {
-			if (this.getName() != null && o.getName() != null) {
-				comparison = this.getName().compareTo(o.getName());
-			}
-		}
-		return comparison;
-	}
+    @SuppressWarnings("NullableProblems")
+    public int compareTo(final Class<?, ?> o) {
+        int comparison = 0;
+        if (this.getId() != null && o.getId() != null) {
+            comparison = this.getId().compareTo(o.getId());
+        } else {
+            if (this.getName() != null && o.getName() != null) {
+                comparison = this.getName().compareTo(o.getName());
+            }
+        }
+        return comparison;
+    }
 
 }

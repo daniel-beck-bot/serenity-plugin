@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Just some useful methods to dump the database and clean it.
@@ -115,14 +116,14 @@ public final class DataBaseToolkit {
 
     @SuppressWarnings({"unchecked", "rawtypes", "UnusedAssignment"})
     private static synchronized void collectEfferentAndAfferent(final Class klass, final List<Package> packages) {
-        List<Efferent> efferents = klass.getEfferent();
+        Set<Efferent> efferents = klass.getEfferent();
         for (final Efferent efferent : efferents) {
             String efferentPackage = Toolkit.replaceAll(efferent.getName(), "<e:", "");
             efferentPackage = Toolkit.replaceAll(efferent.getName(), ">", "");
             for (final Package pakkage : packages) {
                 List<Class> children = pakkage.getChildren();
                 for (final Class child : children) {
-                    List<Afferent> afferents = child.getAfferent();
+                    Set<Afferent> afferents = child.getAfferent();
                     for (final Afferent afferent : afferents) {
                         String afferentPackage = Toolkit.replaceAll(afferent.getName(), "<a:", "");
                         afferentPackage = Toolkit.replaceAll(afferent.getName(), ">", "");
@@ -152,7 +153,7 @@ public final class DataBaseToolkit {
             LOGGER.info("" + object);
             Project<?, ?> project = (Project<?, ?>) dataBase.find(Project.class, Toolkit.hash(Project.class.getName()));
             if (project != null) {
-                LOGGER.warn("Project : " + project.getName());
+                LOGGER.warn("Project : " + project.getName() + ":" + project.getId());
             }
         } catch (final Exception e) {
             LOGGER.error("Exception dumping the data for the project object.", e);
@@ -161,16 +162,16 @@ public final class DataBaseToolkit {
             List<Package> packages = dataBase.find(Package.class);
             for (final Package<Project, Class> pakkage : packages) {
                 log(criteria, pakkage, 1, pakkage.getId(), " : ", pakkage.getName(), ", coverage : ", pakkage.getCoverage(), ", complexity : ",
-                        pakkage.getComplexity(), ", stability : ", pakkage.getStability());
+                        pakkage.getComplexity(), ", stability : ", pakkage.getStability(), ", abstractness : ", pakkage.getAbstractness());
                 for (final Class<Package, Method> klass : pakkage.getChildren()) {
                     log(criteria, klass, 2, " : id : ", klass.getId(), " : name : ", klass.getName(), " : coverage : ", klass.getCoverage(), ", complexity : ",
-                            klass.getComplexity(), ", outer class : ", klass.getOuterClass(), ", outer method : ", klass.getOuterMethod(), ", lines : ", klass
+                            klass.getComplexity(), " : stability : " + klass.getStability(), ", outer class : ", klass.getOuterClass(), ", outer method : ", klass.getOuterMethod(), ", lines : ", klass
                                     .getChildren().size(), ", inner classes : ", klass.getInnerClasses());
                     /*if (klass.getSource() != null) {
                         log(criteria, klass, 5, klass.getSource());
                     }*/
-                    List<Efferent> efferents = klass.getEfferent();
-                    List<Afferent> afferents = klass.getAfferent();
+                    Set<Efferent> efferents = klass.getEfferent();
+                    Set<Afferent> afferents = klass.getAfferent();
                     for (final Efferent efferent : efferents) {
                         log(criteria, efferent, 4, efferent.getName());
                     }

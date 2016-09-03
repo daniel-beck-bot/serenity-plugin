@@ -7,6 +7,8 @@ import com.ikokoon.serenity.model.*;
 import com.ikokoon.serenity.model.Class;
 import com.ikokoon.serenity.persistence.IDataBase;
 import com.ikokoon.serenity.model.Package;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Michael Couck
@@ -15,6 +17,9 @@ import com.ikokoon.serenity.model.Package;
  */
 public class ClassAggregator extends AAggregator {
 
+    @SuppressWarnings("unused")
+    private Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private Class<Package, Method> klass;
 
     public ClassAggregator(IDataBase dataBase, Class<Package, Method> klass) {
@@ -22,7 +27,7 @@ public class ClassAggregator extends AAggregator {
         this.klass = klass;
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void aggregate() {
         // First do the methods
         List<Method> methods = klass.getChildren();
@@ -64,8 +69,9 @@ public class ClassAggregator extends AAggregator {
         klass.setAfference(klass.getAfferent().size());
         klass.setEfference(klass.getEfferent().size());
 
-        // (efference + afference) > 0 ? efference / (efference + afference) : 1;
+        // (efference + afference) > 0 ? efference / (efference + afference) : 0;
         double stability = getStability(klass.getEfferent().size(), klass.getAfferent().size());
+        // System.out.println("Class : " + klass.getName() + ":" + stability + ":" + klass.getEfferent().size() + ":" + klass.getAfferent().size());
 
         klass.setStability(stability);
     }

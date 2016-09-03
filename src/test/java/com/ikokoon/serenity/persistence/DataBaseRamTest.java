@@ -39,7 +39,7 @@ public class DataBaseRamTest extends ATest {
         final List<Composite<?, ?>> list = getList();
         // Check the performance
         list.clear();
-        double inserts = 100000;
+        long inserts = 100000;
         double insertsPerSecond = Executer.execute(new Executer.IPerform() {
             public void execute() {
                 long currentTime = System.currentTimeMillis();
@@ -159,7 +159,7 @@ public class DataBaseRamTest extends ATest {
     @SuppressWarnings("rawtypes")
     public void persistPerformance() throws Exception {
         // Test the insert performance
-        double inserts = 10000;
+        long inserts = 10000;
         double insertsPerSecond = Executer.execute(new Executer.IPerform() {
             public void execute() {
                 Package pakkage = getPackage();
@@ -194,7 +194,7 @@ public class DataBaseRamTest extends ATest {
         }
 
         // Test the select performance
-        double selects = 10000;
+        long selects = 10000;
 
         final List<Object> packageParameters = new ArrayList<Object>();
         packageParameters.add(packageName + "." + 13);

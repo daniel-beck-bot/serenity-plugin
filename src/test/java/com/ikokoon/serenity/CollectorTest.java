@@ -51,7 +51,7 @@ public class CollectorTest extends ATest implements IConstants {
 
         // We must test that the package is correct
         Long packageId = Toolkit.hash(packageName);
-        LOGGER.warn("Looking for package with id : " + packageId + ", " + packageName);
+        logger.warn("Looking for package with id : " + packageId + ", " + packageName);
         Package pakkage = dataBase.find(Package.class, packageId);
         assertNotNull(pakkage);
 
@@ -154,28 +154,30 @@ public class CollectorTest extends ATest implements IConstants {
 
     @Test
     public void collectStart() {
+        Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectStart", "don't care");
+
         Executer.execute(new Executer.IPerform() {
             @Override
             public void execute() {
-                Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectStart", "don't care");
+                Collector.collectStart("com.ikokoon.serenity.CollectorTest$3", "execute", "don't care");
             }
         }, "Collect start performance : ", 100000);
     }
 
     @Test
     public void collectEnd() {
-        Executer.execute(new Executer.IPerform() {
-            @Override
-            public void execute() {
-                Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectEnd", "don't care");
-            }
-        }, "Create the stack : ", 1);
-        Executer.execute(new Executer.IPerform() {
-            @Override
-            public void execute() {
-                Collector.collectEnd("com.ikokoon.serenity.CollectorTest", "collectEnd", "don't care");
-            }
-        }, "Collect end performance : ", 100000);
+        Collector.collectStart("com.ikokoon.serenity.CollectorTest", "collectEnd", "don't care");
+        Collector.collectEnd("com.ikokoon.serenity.CollectorTest", "collectEnd", "don't care");
+    }
+
+    @Test
+    public void collectMatrixStack() {
+        Collector.collectMatrixStack(className, methodName, methodDescription);
+    }
+
+    @Test
+    public void collectTreeStack() {
+        Collector.collectTreeStack(null);
     }
 
 }

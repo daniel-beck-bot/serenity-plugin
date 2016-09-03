@@ -59,8 +59,8 @@ public class PackageAggregator extends AAggregator {
 			}
 		}
 
-		Set<Efferent> efference = new TreeSet<Efferent>();
-		Set<Afferent> afference = new TreeSet<Afferent>();
+		Set<Efferent> efference = new TreeSet<>();
+		Set<Afferent> afference = new TreeSet<>();
 
 		List<Class<?, ?>> classes = pakkage.getChildren();
 		for (Class klass : classes) {
@@ -69,11 +69,11 @@ public class PackageAggregator extends AAggregator {
 			} else {
 				implementations++;
 			}
-			List<Efferent> efferents = klass.getEfferent();
+			Set<Efferent> efferents = klass.getEfferent();
 			for (Efferent efferent : efferents) {
 				efference.add(efferent);
 			}
-			List<Afferent> afferents = klass.getAfferent();
+			Set<Afferent> afferents = klass.getAfferent();
 			for (Afferent afferent : afferents) {
 				afference.add(afferent);
 			}

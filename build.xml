@@ -1,26 +1,61 @@
 <project name="Serenity Deploy" default="deploy">
 
-	<property name="src" value="src/main/java" />
-	<property name="temp" value="target/temp" />
-	<property name="serenity.jar" value="target/serenity.jar" />
-	<property name="readme.txt" value="docs/readme.txt" />
-	<property name="serenity.hpi" value="target/serenity.hpi" />
+    <property name="src" value="src/main/java"/>
+    <property name="temp" value="target/temp"/>
+    <property name="serenity.jar" value="target/serenity.jar"/>
+    <property name="lib" value="lib"/>
+    <property name="readme.txt" value="docs/readme.txt"/>
+    <property name="serenity.hpi" value="target/serenity.hpi"/>
 
-	<target name="deploy">
-		<copy todir="serenity" file="${serenity.jar}" overwrite="true" failonerror="true" />
-		<echo message="Copying the serrenity jar to the test project (i-discover)" />
-		<copy todir="../i-discover/serenity/" file="${serenity.jar}" overwrite="true" failonerror="true" />
-		<copy todir="../ikube/serenity/" file="${serenity.jar}" overwrite="true" failonerror="true" />
-		<copy todir="serenity" file="${serenity.jar}" overwrite="true" failonerror="true" />
-	</target>
-	
-	<target name="package">
-		<delete dir="serenity" />
-		<mkdir dir="serenity"/>
-		<copy todir="serenity" file="${serenity.jar}" overwrite="true" failonerror="true" />
-		<copy todir="serenity" file="${readme.txt}" overwrite="true" failonerror="true" />
-		<copydir dest="serenity/lib" src="lib" />
-		<zip destfile="serenity.zip" basedir="serenity" />
-	</target>
+    <target name="deploy">
+        <copy todir="serenity" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+        <echo message="Copying the serrenity jar to the test project (i-discover)"/>
+
+        <!-- Repackage the manifest because it is hard coded in Jenkins now! -->
+        <property name="classpath" value="serenity.jar lib/log4j-1.2.17.jar lib/asm-5.0.3.jar lib/asm-commmons-5.0.3.jar lib/neodatis-odb-1.9-beta-1.jar lib/java2html-5.0.0.jar lib/dom4j-1.6.1.jar lib/jfreechart-1.0.9.jar lib/jcommon-1.0.9.jar lib/slf4j-api-1.7.7.jar lib/slf4j-jdk14-1.7.7.jar" />
+        <jar update="true" file="target/serenity.jar">
+            <manifest>
+                <attribute name="Build-Jdk" value="1.8.0_91"/>
+                <attribute name="Long-Name" value="Serenity continuous profiling and code coverage"/>
+                <attribute name="Jenkins-Version" value="2.8"/>
+                <attribute name="Class-Path" value="${classpath}"/>
+                <attribute name="Boot-Class-Path" value="${classpath}"/>
+                <attribute name="Premain-Class" value="com.ikokoon.serenity.Transformer"/>
+                <attribute name="Main-Class" value="com.ikokoon.serenity.Messenger" />
+                <attribute name="Sorry" value="Some of the above parameters are hard coded in Jenkins plugin parent pom!" />
+            </manifest>
+        </jar>
+
+        <copy todir="serenity" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+        <copy todir="../ikube/serenity/" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+        <copy todir="../deploy/serenity/" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+        <copy todir="../i-discover/serenity/" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+        <copy todir="../btmu-upgrade/build/serenity/" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+
+        <copy todir="serenity/lib" overwrite="true" failonerror="true">
+            <fileset dir="${lib}" includes="**"/>
+        </copy>
+        <copy todir="../ikube/serenity/lib" overwrite="true" failonerror="true">
+            <fileset dir="${lib}" includes="**"/>
+        </copy>
+        <copy todir="../deploy/serenity/lib" overwrite="true" failonerror="true">
+            <fileset dir="${lib}" includes="**"/>
+        </copy>
+        <copy todir="../i-discover/serenity/lib" overwrite="true" failonerror="true">
+            <fileset dir="${lib}" includes="**"/>
+        </copy>
+        <copy todir="../btmu-upgrade/build/serenity/lib" overwrite="true" failonerror="true">
+            <fileset dir="${lib}" includes="**"/>
+        </copy>
+    </target>
+
+    <target name="package">
+        <delete dir="serenity"/>
+        <mkdir dir="serenity"/>
+        <copy todir="serenity" file="${serenity.jar}" overwrite="true" failonerror="true"/>
+        <copy todir="serenity" file="${readme.txt}" overwrite="true" failonerror="true"/>
+        <copydir dest="serenity/lib" src="lib"/>
+        <zip destfile="serenity.zip" basedir="serenity"/>
+    </target>
 
 </project>

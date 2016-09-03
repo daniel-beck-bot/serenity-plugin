@@ -81,7 +81,7 @@ public interface IDataBase {
             return dataBase;
         }
 
-        public static synchronized void addDataBaseListener(final String dataBaseFile, final IDataBaseListener dataBaseListener) {
+        static synchronized void addDataBaseListener(final String dataBaseFile, final IDataBaseListener dataBaseListener) {
             List<IDataBaseListener> dataBaseListeners = DataBaseManager.DATABASE_LISTENERS.get(dataBaseFile);
             if (dataBaseListeners == null) {
                 dataBaseListeners = new ArrayList<>();
@@ -90,14 +90,14 @@ public interface IDataBase {
             dataBaseListeners.add(dataBaseListener);
         }
 
-        public static synchronized void removeDataBaseListener(final String dataBaseFile, final IDataBaseListener dataBaseListener) {
+        static synchronized void removeDataBaseListener(final String dataBaseFile, final IDataBaseListener dataBaseListener) {
             List<IDataBaseListener> dataBaseListeners = DataBaseManager.DATABASE_LISTENERS.get(dataBaseFile);
             if (dataBaseListeners != null) {
                 dataBaseListeners.remove(dataBaseListener);
             }
         }
 
-        public static synchronized void fireDataBaseEvent(final String dataBaseFile, final IDataBaseEvent dataBaseEvent) {
+        static synchronized void fireDataBaseEvent(final String dataBaseFile, final IDataBaseEvent dataBaseEvent) {
             List<IDataBaseListener> dataBaseListeners = DataBaseManager.DATABASE_LISTENERS.get(dataBaseFile);
             if (dataBaseListeners != null) {
                 IDataBaseListener[] array = dataBaseListeners.toArray(new IDataBaseListener[dataBaseListeners.size()]);

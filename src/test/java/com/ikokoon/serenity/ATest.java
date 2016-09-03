@@ -11,8 +11,8 @@ import com.ikokoon.target.Target;
 import com.ikokoon.toolkit.LoggingConfigurator;
 import com.ikokoon.toolkit.Toolkit;
 import org.apache.log4j.Logger;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -41,30 +41,36 @@ import static org.mockito.Mockito.mock;
 @RunWith(MockitoJUnitRunner.class)
 public abstract class ATest implements IConstants {
 
-    protected static Logger LOGGER;
+    static {
+        LoggingConfigurator.configure();
+    }
 
-    protected static IDataBase mockInternalDataBase = mock(IDataBase.class);
-    protected static IDataBase dataBase;
+    protected Logger logger;
+    protected IDataBase dataBase;
 
-    protected Type stringType = Type.getType(String.class);
-    protected Type integerType = Type.getType(Integer.class);
-    protected Type[] types = new Type[]{stringType, stringType, stringType, integerType, integerType};
+    protected IDataBase mockInternalDataBase = mock(IDataBase.class);
+    private Type stringType = Type.getType(String.class);
+    private Type integerType = Type.getType(Integer.class);
+
+    private Type[] types = new Type[]{stringType, stringType, stringType, integerType, integerType};
 
     protected String packageName = Target.class.getPackage().getName();
     protected String className = Target.class.getName();
     protected String methodName = "complexMethod";
     protected String methodDescription = Type.getMethodDescriptor(Type.VOID_TYPE, types);
     protected int lineNumber = 70;
-    protected double complexity = 10d;
-    protected int access = 1537;
+    double complexity = 10d;
 
-    protected String efferentName = "efferentName";
-    protected String afferentName = "afferentName";
+    int access = 1537;
 
-    @BeforeClass
-    public static void beforeClass() {
-        LoggingConfigurator.configure();
-        LOGGER = Logger.getLogger(ATest.class);
+    @SuppressWarnings("FieldCanBeLocal")
+    private String efferentName = "efferentName";
+    @SuppressWarnings("FieldCanBeLocal")
+    private String afferentName = "afferentName";
+
+    @Before
+    public void beforeParent() {
+        logger = Logger.getLogger(ATest.class);
         System.setProperty(IConstants.INCLUDED_ADAPTERS_PROPERTY, "profiling;coverage;complexity;dependency");
         Configuration configuration = Configuration.getConfiguration();
         configuration.getIncludedPackages().add(IConstants.class.getPackage().getName());
@@ -77,8 +83,8 @@ public abstract class ATest implements IConstants {
         Collector.initialize(dataBase);
     }
 
-    @AfterClass
-    public static void afterClass() {
+    @After
+    public void afterParent() {
         dataBase.close();
     }
 
@@ -95,7 +101,7 @@ public abstract class ATest implements IConstants {
         try {
             source.write(sourceBytes);
         } catch (IOException e) {
-            LOGGER.error("", e);
+            logger.error("", e);
         }
         return (ClassWriter) VisitorFactory.getClassVisitor(new java.lang.Class[]{visitorClass}, className, classBytes, source);
     }

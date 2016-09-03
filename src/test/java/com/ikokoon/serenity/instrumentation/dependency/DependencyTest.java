@@ -14,9 +14,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.Opcodes;
 
-import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -34,11 +34,11 @@ public class DependencyTest extends ATest {
 
     @Test
     public void visitInner() throws Exception {
-        // LOGGER.info("***************************************************");
+        // logger.info("***************************************************");
         // visitClass(DependencyClassAdapter.class, Discovery.class.getName());
-        // LOGGER.info("***************************************************");
+        // logger.info("***************************************************");
         // visitClass(DependencyClassAdapter.class, Discovery.InnerClass.class.getName());
-        // LOGGER.info("***************************************************");
+        // logger.info("***************************************************");
         // visitClass(DependencyClassAdapter.class, Discovery.InnerClass.InnerInnerClass.class.getName());
     }
 
@@ -56,8 +56,8 @@ public class DependencyTest extends ATest {
         Class<?, ?> klass = (Class<?, ?>) dataBase.find(Class.class, Toolkit.hash(className));
         assertNotNull(klass);
 
-        List<Afferent> afferent = klass.getAfferent();
-        List<Efferent> efferent = klass.getEfferent();
+        Set<Afferent> afferent = klass.getAfferent();
+        Set<Efferent> efferent = klass.getEfferent();
         assertTrue(containsAfferentPackage(afferent, Logger.class.getPackage().getName()));
         // TODO: Check why this is failing...
         // assertTrue(containsAfferentPackage(afferent, Serializable.class.getPackage().getName()));
@@ -82,12 +82,12 @@ public class DependencyTest extends ATest {
 
         List<Class<Package, Method>> innerClasses = klass.getInnerClasses();
         for (Class<?, ?> innerClass : innerClasses) {
-            LOGGER.warn("Inner class : " + innerClass.getName() + ", " + innerClass.getAccess());
+            logger.warn("Inner class : " + innerClass.getName() + ", " + innerClass.getAccess());
         }
 
         List<Method> methods = klass.getChildren();
         for (Method<?, ?> method : methods) {
-            LOGGER.warn("Method : " + method.getName() + ", " + method.getAccess());
+            logger.warn("Method : " + method.getName() + ", " + method.getAccess());
         }
 
         // printOpCodes();
@@ -106,7 +106,7 @@ public class DependencyTest extends ATest {
                 field.setAccessible(true);
                 builder.append(field.get(opcodes));
             } catch (Exception e) {
-                LOGGER.error("", e);
+                logger.error("", e);
             }
             builder.append("\" />");
 
@@ -114,9 +114,9 @@ public class DependencyTest extends ATest {
         }
     }
 
-    private boolean containsAfferentPackage(List<Afferent> afferent, String name) {
+    private boolean containsAfferentPackage(Set<Afferent> afferent, String name) {
         for (Afferent aff : afferent) {
-            LOGGER.debug("Afferent : " + aff);
+            logger.debug("Afferent : " + aff);
             if (aff.getName().indexOf(name) > -1) {
                 return true;
             }
@@ -124,7 +124,7 @@ public class DependencyTest extends ATest {
         return false;
     }
 
-    private boolean containsEfferentPackage(List<Efferent> efferent, String name) {
+    private boolean containsEfferentPackage(Set<Efferent> efferent, String name) {
         for (Efferent eff : efferent) {
             if (eff.getName().indexOf(name) > -1) {
                 return true;

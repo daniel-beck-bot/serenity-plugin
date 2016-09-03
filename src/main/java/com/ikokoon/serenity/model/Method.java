@@ -1,7 +1,6 @@
 package com.ikokoon.serenity.model;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,7 +38,7 @@ public class Method<E, F> extends Composite<E, F> implements Comparable<Method<?
     private long endWait;
     private long waitTime;
 
-    private List<Snapshot<?, ?>> snapshots = new ArrayList<>();
+    private List<Snapshot<?, ?>> snapshots;
 
     public String getName() {
         return name;
@@ -89,9 +88,9 @@ public class Method<E, F> extends Composite<E, F> implements Comparable<Method<?
         this.coverage = coverage;
     }
 
-    /**
-     * Profiling attributes.
-     */
+    //*
+    // Profiling attributes.
+    //*
 
     /**
      * @return bla...
@@ -142,7 +141,7 @@ public class Method<E, F> extends Composite<E, F> implements Comparable<Method<?
         return netTime;
     }
 
-    public void setNetTime(long netTime) {
+    private void setNetTime(long netTime) {
         this.netTime = netTime;
     }
 

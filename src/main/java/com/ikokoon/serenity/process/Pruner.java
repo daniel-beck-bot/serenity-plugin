@@ -46,11 +46,11 @@ public class Pruner extends AProcess implements IConstants {
         }
         List<Afferent> afferents = dataBase.find(Afferent.class);
         for (Afferent afferent : afferents) {
-            dataBase.remove(afferent.getClass(), afferent.getId());
+            // dataBase.remove(afferent.getClass(), afferent.getId());
         }
         List<Efferent> efferents = dataBase.find(Efferent.class);
         for (Efferent efferent : efferents) {
-            dataBase.remove(efferent.getClass(), efferent.getId());
+            // dataBase.remove(efferent.getClass(), efferent.getId());
         }
     }
 }

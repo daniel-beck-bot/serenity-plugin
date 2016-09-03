@@ -6,7 +6,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.ikokoon.serenity.ATest;
-import com.ikokoon.toolkit.Permutations;
 
 public class PermutationsTest extends ATest {
 
@@ -19,7 +18,7 @@ public class PermutationsTest extends ATest {
 		permutations.getPermutations(strings, permutationsList, strings.length);
 		for (Object[] stringArray : permutationsList) {
 			for (Object string : stringArray) {
-				LOGGER.debug(string + ":");
+				logger.debug(string + ":");
 			}
 		}
 	}

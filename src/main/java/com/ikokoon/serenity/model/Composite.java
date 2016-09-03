@@ -11,10 +11,10 @@ import java.util.List;
 public abstract class Composite<E, F> {
 
     public static final String NAME = "name";
-    public static final String CLASS_NAME = "className";
-    public static final String METHOD_NAME = "methodName";
-    public static final String NUMBER = "number";
-    public static final String DESCRIPTION = "description";
+    static final String CLASS_NAME = "className";
+    static final String METHOD_NAME = "methodName";
+    static final String NUMBER = "number";
+    static final String DESCRIPTION = "description";
 
     private Long id;
     private Composite<E, F> parent;

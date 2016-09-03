@@ -27,38 +27,38 @@ package com.ikokoon.serenity.persistence;
 //	public void memoryUsage() {
 //		long million = 1000000;
 //		long freeMemoryStart = Runtime.getRuntime().freeMemory() / million;
-//		LOGGER.info("Free memory start : " + freeMemoryStart);
+//		logger.info("Free memory start : " + freeMemoryStart);
 //
 //		IDataBase dataBase = IDataBase.DataBaseManager.getDataBase(DataBaseJpa.class, IConstants.DATABASE_FILE_JPA, mockInternalDataBase);
 //
 //		long freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-//		LOGGER.info("Free memory difference after initialise : " + (freeMemoryEnd - freeMemoryStart));
+//		logger.info("Free memory difference after initialise : " + (freeMemoryEnd - freeMemoryStart));
 //
 //		Package<?, ?> pakkage = dataBase.find(Package.class, Toolkit.hash("edu.umd.cs.findbugs"));
-//		LOGGER.info(pakkage);
+//		logger.info(pakkage);
 //		assertNotNull(pakkage);
 //
 //		freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-//		LOGGER.info("Free memory difference after select one package : " + (freeMemoryEnd - freeMemoryStart));
+//		logger.info("Free memory difference after select one package : " + (freeMemoryEnd - freeMemoryStart));
 //
 //		pakkage = null;
 //		Runtime.getRuntime().gc();
 //
 //		freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-//		LOGGER.info("Free memory difference after null the package : " + (freeMemoryEnd - freeMemoryStart));
+//		logger.info("Free memory difference after null the package : " + (freeMemoryEnd - freeMemoryStart));
 //
 //		List<Package> packages = dataBase.find(Package.class);
 //		assertTrue(packages.size() > 0);
 //
 //		freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-//		LOGGER.info("Free memory difference after select all packages : " + (freeMemoryEnd - freeMemoryStart));
+//		logger.info("Free memory difference after select all packages : " + (freeMemoryEnd - freeMemoryStart));
 //
 //		packages = null;
 //		Runtime.getRuntime().gc();
 //
 //		freeMemoryEnd = Runtime.getRuntime().freeMemory() / million;
-//		LOGGER.info("Free memory difference after null all the packges : " + (freeMemoryEnd - freeMemoryStart));
-//		LOGGER.info("Free memory end : " + freeMemoryEnd);
+//		logger.info("Free memory difference after null all the packges : " + (freeMemoryEnd - freeMemoryStart));
+//		logger.info("Free memory end : " + freeMemoryEnd);
 //
 //		dataBase.close();
 //	}

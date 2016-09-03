@@ -48,12 +48,12 @@ public class CoverageClassAdapterExtTest extends ATest {
 		String packageName = Toolkit.classNameToPackageName(className);
 		String directoryPath = Toolkit.dotToSlash(packageName);
 		String fileName = className.substring(className.indexOf(Toolkit.classNameToPackageName(className)) + packageName.length() + 1) + ".class";
-		LOGGER.warn("Directory path : " + directoryPath + ", file name : " + fileName);
+		logger.warn("Directory path : " + directoryPath + ", file name : " + fileName);
 		File directory = new File(IConstants.SERENITY_DIRECTORY + File.separator + directoryPath);
 		if (!directory.exists()) {
 			directory.mkdirs();
 		}
-		LOGGER.warn("Absolute directory : " + directory.getAbsolutePath());
+		logger.warn("Absolute directory : " + directory.getAbsolutePath());
 
 		File file = new File(directory, fileName);
 		Toolkit.setContents(file, classBytes);

@@ -43,7 +43,7 @@ public class CoverageTest extends ATest {
         try {
             visitClass(CoverageClassAdapterChecker.class, className, classBytes, sourceBytes);
         } catch (Exception e) {
-            LOGGER.error("Expected exception : " + e.getMessage() + ", " + e);
+            logger.error("Expected exception : " + e.getMessage() + ", " + e);
             exception = e;
         }
         assertNotNull(exception);

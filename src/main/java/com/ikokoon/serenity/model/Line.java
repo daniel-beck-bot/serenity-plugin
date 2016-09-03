@@ -16,7 +16,8 @@ public class Line<E, F> extends Composite<Class<?, ?>, Object> implements Compar
     private int number;
     private int counter;
 
-    public Line() {}
+    public Line() {
+    }
 
     public Line(final String className, final String methodName, final int number) {
         this.className = className;
@@ -65,11 +66,8 @@ public class Line<E, F> extends Composite<Class<?, ?>, Object> implements Compar
                 + counter;
     }
 
-    @SuppressWarnings("NullableProblems")
+    @Override
     public int compareTo(final Line<?, ?> o) {
-		if (o == null) {
-            return -1;
-        }
         int comparison = 0;
         if (this.getId() != null && o.getId() != null) {
             comparison = this.getId().compareTo(o.getId());

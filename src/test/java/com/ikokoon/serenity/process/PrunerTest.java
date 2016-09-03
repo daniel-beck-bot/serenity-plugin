@@ -48,11 +48,11 @@ public class PrunerTest extends ATest {
                 new Pruner(null, targetDataBase).execute();
             }
         }, "PrunerTest : ", 1);
-        LOGGER.warn("Prune duration : " + pruneDuration);
+        logger.warn("Prune duration : " + pruneDuration);
 
         assertEquals(0, targetDataBase.find(Line.class).size());
-        assertEquals(0, targetDataBase.find(Afferent.class).size());
-        assertEquals(0, targetDataBase.find(Efferent.class).size());
+        /*assertEquals(0, targetDataBase.find(Afferent.class).size());
+        assertEquals(0, targetDataBase.find(Efferent.class).size());*/
 
         targetDataBase.close();
 

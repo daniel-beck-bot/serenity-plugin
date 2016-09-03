@@ -1,35 +1,28 @@
 package com.ikokoon.serenity.model;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author Michael Couck
  * @version 01.00
  * @since 12-08-2009
  */
+@SuppressWarnings("unused")
 @Unique(fields = {Composite.NAME})
-public class Package<E, F> extends Composite<Project, Class> implements Comparable<Package<?, ?>>, Serializable {
+public class Package<E, F> extends Stability<Project, Class> implements Comparable<Package<?, ?>>, Serializable {
 
     private String name;
 
     private double coverage;
     private double complexity;
     private double abstractness;
-    private double stability;
+
     private double distance;
 
     private double lines;
     private double interfaces;
     private double implementations;
     private double executed;
-
-    private double efference;
-    private double afference;
-
-    private Set<Efferent> efferent = new TreeSet<>();
-    private Set<Afferent> afferent = new TreeSet<>();
 
     public String getName() {
         return name;
@@ -79,14 +72,6 @@ public class Package<E, F> extends Composite<Project, Class> implements Comparab
         this.abstractness = abstractness;
     }
 
-    public double getStability() {
-        return stability;
-    }
-
-    public void setStability(double stability) {
-        this.stability = stability;
-    }
-
     public double getDistance() {
         return distance;
     }
@@ -111,43 +96,13 @@ public class Package<E, F> extends Composite<Project, Class> implements Comparab
         this.implementations = implementations;
     }
 
-    public double getEfference() {
-        return efference;
-    }
-
-    public void setEfference(double efferent) {
-        this.efference = efferent;
-    }
-
-    public double getAfference() {
-        return afference;
-    }
-
-    public void setAfference(double afferent) {
-        this.afference = afferent;
-    }
-
-    public Set<Efferent> getEfferent() {
-        return efferent;
-    }
-
-    public void setEfferent(Set<Efferent> efference) {
-        this.efferent = efference;
-    }
-
-    public Set<Afferent> getAfferent() {
-        return afferent;
-    }
-
-    public void setAfferent(Set<Afferent> afference) {
-        this.afferent = afference;
-    }
-
     public String toString() {
         return getId() + ":" + name;
     }
 
-    public int compareTo(Package<?, ?> o) {
+    @Override
+    @SuppressWarnings("NullableProblems")
+    public int compareTo(final Package<?, ?> o) {
         int comparison = 0;
         if (this.getId() != null && o.getId() != null) {
             comparison = this.getId().compareTo(o.getId());

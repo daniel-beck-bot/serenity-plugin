@@ -12,18 +12,16 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
- * Note to self: Make this class non static? Is this a better option? More OO? Better performance? Will it be easier to
- * understand? In the case of distributing the collector class by putting it in the constant pool of the classes and then
- * calling the instance variable from inside the classes, will this be more difficult to understand?
  * In this static class all the real collection logic is in one place and is called statically. The generation of the
  * instructions to call this class is simple and seemingly not much less performant than an instance variable.
  * This class collects the data from the processing. It adds the metrics to the packages, classes, methods and lines and
  * persists the data in the database. This is the central collection class for the coverage and dependency functionality.
+ * Note to self: Make this class non static? Is this a better option? More OO? Better performance? Will it be easier to
+ * understand? In the case of distributing the collector class by putting it in the constant pool of the classes and then
+ * calling the instance variable from inside the classes, will this be more difficult to understand?
  *
  * @author Michael Couck
  * @version 01.00
@@ -32,6 +30,7 @@ import java.util.List;
 public final class Collector implements IConstants {
 
     static Method[][] MATRIX = new Method[1025][];
+    static Map<Long, Method> THREAD_CALL_STACKS = new HashMap<>();
 
     static {
         for (int i = 0; i < MATRIX.length; i++) {
@@ -40,7 +39,7 @@ public final class Collector implements IConstants {
     }
 
     /**
-     * The LOGGER.
+     * The logger.
      */
     private static final Logger LOGGER = LoggerFactory.getLogger(Collector.class);
     /**
@@ -85,44 +84,87 @@ public final class Collector implements IConstants {
     @SuppressWarnings("UnusedParameters")
     public static void collectStart(final String className, final String methodName, final String methodDescription) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        Method[] methods = MATRIX[stackTraceElements.length];
-
+        int matrixDepth = stackTraceElements.length - 2;
+        Method[] methods = MATRIX[matrixDepth];
         short index = Toolkit.fastShortHash(className, methodName, methodDescription);
-        Method method = methods[index];
-        if (method == null) {
-            collectStack();
 
-            method = getMethod(className, methodName, methodDescription);
-            methods[index] = method;
-            StackTraceElement stackTraceElement = stackTraceElements[2];
-            LOGGER.info("Method index at start : " + index + ", " + className + ":" + methodName + ":" + stackTraceElement.getLineNumber() + ", " +
-                    stackTraceElement.getClassName() + ", " + stackTraceElement.getMethodName() + ", " + stackTraceElement.getLineNumber());
+        // System.out.println("Looking for : " + className + ":" + methodName + ":" + methodDescription);
+
+        Method method = methods[index];
+        //noinspection StatementWithEmptyBody
+        if (method == null) {
+            method = collectMatrixStack(className, methodName, methodDescription);
+            collectTreeStack(method);
+        } else {
+            // System.out.println("          found : " + className + ":" + methodName + ":" + methodDescription);
         }
         method.setStartTime(System.nanoTime());
         method.setInvocations(method.getInvocations() + 1);
     }
 
-    static void collectStack() {
-        LOGGER.info("Collecting stack : ");
-        Method<?, ?> method;
+    static void collectTreeStack(final Method<?, ?> targetMethod) {
+        LOGGER.info("Collecting tree stack : ");
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+
+        Method parentMethod = null;
+
+        int i = stackTraceElements.length - 1;
+        int matrixDepth = 0;
+        Method<?, ?> rootMethod = getMethod(stackTraceElements[i], matrixDepth);
+        long threadHash = Toolkit.hash(Thread.currentThread().toString());
+        THREAD_CALL_STACKS.put(threadHash, rootMethod);
+
+        do {
+            Method method = getMethod(stackTraceElements[i], matrixDepth);
+            //noinspection unchecked
+            method.setParent(parentMethod);
+            if (parentMethod != null && !parentMethod.getChildren().contains(method)) {
+                //noinspection unchecked
+                parentMethod.getChildren().add(method);
+            }
+            parentMethod = method;
+            matrixDepth++;
+        } while (--i >= 2);
+
+        if (!parentMethod.getChildren().contains(targetMethod)) {
+            //noinspection unchecked
+            parentMethod.getChildren().add(targetMethod);
+        }
+    }
+
+    static Method<?, ?> getMethod(final StackTraceElement stackTraceElement, final int matrixDepth) {
+        String stackTraceElementClassName = stackTraceElement.getClassName();
+        String stackTraceElementMethodName = stackTraceElement.getMethodName();
+        String lineNumber = String.valueOf(stackTraceElement.getLineNumber());
+
+        short index = Toolkit.fastShortHash(stackTraceElementClassName, stackTraceElementMethodName, lineNumber);
+        if (MATRIX[matrixDepth][index] == null) {
+            MATRIX[matrixDepth][index] = getMethod(stackTraceElementClassName, stackTraceElementMethodName, lineNumber);
+            Method<?, ?> method = MATRIX[matrixDepth][index];
+            System.out.println("Matrix depth : " + matrixDepth + ":" + index + ":" + method.getClassName() + ":" + method.getName());
+        }
+
+        return MATRIX[matrixDepth][index];
+    }
+
+    static Method<?, ?> collectMatrixStack(final String className, final String methodName, final String methodDescription) {
+        LOGGER.info("Collecting matrix stack : ");
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+
+        // Collect all the methods in the stack and push to the matrix
+        int matrixDepth = 0;
         int i = stackTraceElements.length - 1;
         do {
-            Method[] methods = MATRIX[i];
-            StackTraceElement stackTraceElement = stackTraceElements[i];
-            String stackTraceElementClassName = stackTraceElement.getClassName();
-            String stackTraceElementMethodName = stackTraceElement.getMethodName();
-            String lineNumber = String.valueOf(stackTraceElement.getLineNumber());
+            getMethod(stackTraceElements[i], matrixDepth);
+            matrixDepth++;
+        } while (--i > 2);
 
-            // If we don't have the method in the array the push it to the array
-            short index = Toolkit.fastShortHash(stackTraceElementClassName, stackTraceElementMethodName, lineNumber);
-            method = methods[index];
-            if (method == null) {
-                method = getMethod(stackTraceElementClassName, stackTraceElementMethodName, lineNumber);
-                methods[index] = method;
-            }
-            LOGGER.info("        : " + method.getClassName() + ":" + method.getName());
-        } while (--i >= 1);
+        // Get the 'calling' method with the description, not the line number
+        // and push it to the matrix at the current depth
+        short index = Toolkit.fastShortHash(className, methodName, methodDescription);
+        MATRIX[matrixDepth][index] = getMethod(className, methodName, methodDescription);
+
+        return MATRIX[matrixDepth][index];
     }
 
     /**
@@ -133,18 +175,11 @@ public final class Collector implements IConstants {
      * @param methodName        the name of the method in the class that is being executed
      * @param methodDescription the byte code description of the method
      */
-    @SuppressWarnings("unused")
     public static void collectEnd(final String className, final String methodName, final String methodDescription) {
+        // Get the calling method in the matrix at the depth indicated by the stack trace elements
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        Method[] methods = MATRIX[stackTraceElements.length];
-
         short index = Toolkit.fastShortHash(className, methodName, methodDescription);
-
-        Method method = methods[index];
-
-        /*LOGGER.info("Method index at end : " + index + ", " + className + ":" + methodName + ":" + lineNumber + ", " +
-                stackTraceElement.getClassName() + ", " + stackTraceElement.getMethodName() + ", " + stackTraceElement.getLineNumber());*/
-
+        Method method = MATRIX[stackTraceElements.length - 2][index];
         method.setEndTime(System.nanoTime());
 
         long executionTime = method.getEndTime() - method.getStartTime();
@@ -283,22 +318,21 @@ public final class Collector implements IConstants {
                 continue;
             }
             // Exclude java.lang classes and packages
-            if (Configuration.getConfiguration().excluded(packageName) || Configuration.getConfiguration()
-                    .excluded(targetPackageName)) {
+            if (Configuration.getConfiguration().excluded(packageName) ||
+                    Configuration.getConfiguration().excluded(targetPackageName)) {
                 continue;
             }
             // Add the target package name to the afferent packages for this package
             Class<Package, Method> klass = getClass(className);
             Afferent afferent = getAfferent(klass, targetPackageName);
-            if (!klass.getAfferent().contains(afferent)) {
-                klass.getAfferent().add(afferent);
-            }
+            klass.getAfferent().add(afferent);
+            klass.setAfference(klass.getAfferent().size());
+
             // Add this package to the efferent packages of the target
             Class<Package, Method> targetClass = getClass(targetClassName);
             Efferent efferent = getEfferent(targetClass, packageName);
-            if (!targetClass.getEfferent().contains(efferent)) {
-                targetClass.getEfferent().add(efferent);
-            }
+            targetClass.getEfferent().add(efferent);
+            klass.setEfference(klass.getEfferent().size());
         }
     }
 
