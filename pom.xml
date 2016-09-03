@@ -1,7 +1,4 @@
-<project
-        xmlns="http://maven.apache.org/POM/4.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
@@ -12,7 +9,7 @@
     </parent>
 
     <artifactId>serenity</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
     <packaging>hpi</packaging>
     <name>Jenkins Serenity plugin</name>
     <description>Code metrics and coverage plugin for Jenkins, dynamic instrumentation, and soon continuous profiling!
@@ -23,7 +20,7 @@
         <connection>scm:git:ssh://git@github.com/jenkinsci/serenity-plugin.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/jenkinsci/serenity-plugin.git</developerConnection>
         <url>https://github.com/jenkinsci/serenity-plugin</url>
-        <tag>head</tag>
+        <tag>serenity-1.2</tag>
     </scm>
 
     <licenses>
@@ -129,12 +126,12 @@
                         <phase>install</phase>
                         <configuration>
                             <tasks verbose="true">
-                                <delete dir="serenity"/>
-                                <mkdir dir="serenity"/>
-                                <copy todir="serenity" file="target/serenity.jar" overwrite="true" failonerror="true"/>
-                                <copy todir="serenity" file="docs/readme.txt" overwrite="true" failonerror="true"/>
-                                <copydir dest="serenity/lib" src="lib"/>
-                                <zip destfile="target/serenity.zip" basedir="serenity"/>
+                                <delete dir="serenity" />
+                                <mkdir dir="serenity" />
+                                <copy todir="serenity" file="target/serenity.jar" overwrite="true" failonerror="true" />
+                                <copy todir="serenity" file="docs/readme.txt" overwrite="true" failonerror="true" />
+                                <copydir dest="serenity/lib" src="lib" />
+                                <zip destfile="target/serenity.zip" basedir="serenity" />
                             </tasks>
                         </configuration>
                         <goals>
